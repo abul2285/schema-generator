@@ -64,3 +64,9 @@ model VerificationToken {
 
     @@unique([identifier, token])
 }
+
+model Schema {
+    id     String @id @default(uuid())
+    name   String
+    schema String
+}

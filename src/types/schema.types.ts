@@ -1,5 +1,5 @@
 export type FieldType = {
   name: string;
-  value?: string | number;
+  value?: string;
   fields?: FieldType[];
 };
