@@ -16,12 +16,12 @@ export const Property = ({
       <input
         className="h-9 w-96 rounded-md border p-2 text-gray-700 "
         placeholder="Property Name"
-        value={name}
+        defaultValue={name}
       />
       <input
         className="h-9 w-96 flex-1 rounded-md border p-2 text-gray-700"
         placeholder="Property Value"
-        value={value}
+        defaultValue={value}
       />
       <div className="flex space-x-2">
         <button className="flex h-9 w-9 items-center justify-center rounded  border border-stone-500 bg-white text-stone-500">

@@ -27,7 +27,7 @@ export const PropertyGroup = ({
         <input
           className="h-9 w-96 rounded-md border p-2 text-gray-700 "
           placeholder="Group Name"
-          value={name}
+          defaultValue={name}
         />
 
         <NavItemWrapper>
