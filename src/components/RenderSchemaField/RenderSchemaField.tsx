@@ -8,9 +8,16 @@ export const RenderSchemaFields = ({ fields }: { fields: FieldType[] }) => {
       {fields.map(({ name, value = "", fields }, idx) => {
         if (fields)
           return (
-            <PropertyGroup address="0" key={idx} name={name} fields={fields} />
+            <PropertyGroup
+              key={idx}
+              name={name}
+              fields={fields}
+              address={`${idx}`}
+            />
           );
-        return <Property key={idx} className="" name={name} value={value} />;
+        return (
+          <Property key={idx} address={`${idx}`} name={name} value={value} />
+        );
       })}
     </>
   );
