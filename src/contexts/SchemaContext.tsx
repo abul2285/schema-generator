@@ -1,26 +1,18 @@
 import {
+  useMemo,
   useState,
   useEffect,
   useContext,
   createContext,
   type ReactNode,
-  type SetStateAction,
 } from "react";
-import { SchemaFieldType, type FieldType } from "~/types/schema.types";
+import debounce from "lodash/debounce";
+
 import { api } from "~/utils/api";
 import { isBrowser } from "~/utils/isBrowser";
 import { getTargetItems } from "~/utils/schema";
-
-type SchemaContextValueType = {
-  id: string;
-  name: string;
-  isLoading: boolean;
-  schema: FieldType[];
-  handleClone: (string: string) => void;
-  handleRemove: (string: string) => void;
-  setSchema: (value: SetStateAction<FieldType[]>) => void;
-  handleAdd: (address: string, type: SchemaFieldType) => void;
-};
+import { type SchemaContextValueType } from "~/types/context.types";
+import { SchemaFieldType, type FieldType } from "~/types/schema.types";
 
 const SchemaContext = createContext<SchemaContextValueType>(
   {} as SchemaContextValueType
@@ -30,6 +22,7 @@ const Provider = SchemaContext.Provider;
 export const SchemaProvider = ({ children }: { children: ReactNode }) => {
   const [schema, setSchema] = useState<FieldType[]>([]);
   const id = isBrowser ? localStorage.getItem("schemaId") || "" : "";
+  const { mutate: updateSchema } = api.scheme.updateSchema.useMutation();
 
   const { data, isLoading } = api.scheme.getSchemaById.useQuery({ id });
 
@@ -46,6 +39,7 @@ export const SchemaProvider = ({ children }: { children: ReactNode }) => {
     }
     fields.push(payload);
     setSchema(clonedSchema);
+    handleBackgroundSave(id, data?.name || "", clonedSchema);
   };
 
   const handleRemove = (address: string) => {
@@ -57,6 +51,7 @@ export const SchemaProvider = ({ children }: { children: ReactNode }) => {
       fields.splice(Number(lastIndex), 1);
     }
     setSchema(clonedSchema);
+    handleBackgroundSave(id, data?.name || "", clonedSchema);
   };
 
   const handleClone = (address: string) => {
@@ -69,7 +64,20 @@ export const SchemaProvider = ({ children }: { children: ReactNode }) => {
       fields.splice(Number(lastIndex), 0, property);
     }
     setSchema(clonedSchema);
+    handleBackgroundSave(id, data?.name || "", clonedSchema);
   };
+
+  const handleBackgroundSave = useMemo(
+    () =>
+      debounce((id: string, name: string, schema: FieldType[]) => {
+        updateSchema({
+          id,
+          name,
+          schema: JSON.stringify(schema),
+        });
+      }, 3000),
+    [updateSchema]
+  );
 
   useEffect(() => {
     if (data) {
