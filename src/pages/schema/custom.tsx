@@ -1,10 +1,12 @@
+import Link from "next/link";
+import debounce from "lodash/debounce";
+import { type ChangeEvent, useMemo } from "react";
 import {
+  HomeIcon,
   TrashIcon,
   PlusCircleIcon,
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
-import debounce from "lodash/debounce";
-import { type ChangeEvent, useMemo } from "react";
 
 import { api } from "~/utils/api";
 import {
@@ -62,6 +64,12 @@ const Custom = () => {
     <>
       <Navigation>
         <NavItemWrapper>
+          <Link href="/">
+            <NavItem hoverAble>
+              <HomeIcon className="mr-1 h-6 w-6" />
+              Back To Home
+            </NavItem>
+          </Link>
           <NavItem hoverAble>
             <PlusCircleIcon className="mr-1 h-6 w-6" />
             Edit Schema
