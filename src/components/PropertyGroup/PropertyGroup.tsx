@@ -16,8 +16,16 @@ export const PropertyGroup = ({
   address: string;
   fields: FieldType[];
 }) => {
-  const { handleAdd, handleClone, handleRemove } = useSchemaContext();
+  const { handleAdd, handleClone, handleRemove, handleChange } =
+    useSchemaContext();
   const groupStyles = generateGroupStyle(address);
+
+  const handleOnChange = (
+    key: Exclude<keyof FieldType, "fields">,
+    value: string
+  ) => {
+    handleChange({ address, key, value });
+  };
 
   return (
     <div className="my-1 flex flex-col">
@@ -25,9 +33,10 @@ export const PropertyGroup = ({
         className={`flex items-center justify-between bg-sky-200 px-4 ${groupStyles}`}
       >
         <input
-          className="h-9 w-96 rounded-md border p-2 text-gray-700 "
-          placeholder="Group Name"
           defaultValue={name}
+          placeholder="Group Name"
+          onChange={(event) => handleOnChange("name", event.target.value)}
+          className="h-9 w-96 rounded-md border p-2 text-gray-700 "
         />
 
         <NavItemWrapper>

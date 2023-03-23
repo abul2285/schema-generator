@@ -54,7 +54,7 @@ const Custom = () => {
           return updateSchema({ ...payload, id });
         }
         createSchema(payload);
-      }, 500),
+      }, 3000),
     [createSchema, id, schema, updateSchema]
   );
 

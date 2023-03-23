@@ -11,7 +11,10 @@ import debounce from "lodash/debounce";
 import { api } from "~/utils/api";
 import { isBrowser } from "~/utils/isBrowser";
 import { getTargetItems } from "~/utils/schema";
-import { type SchemaContextValueType } from "~/types/context.types";
+import {
+  type SchemaChangeType,
+  type SchemaContextValueType,
+} from "~/types/context.types";
 import { SchemaFieldType, type FieldType } from "~/types/schema.types";
 
 const SchemaContext = createContext<SchemaContextValueType>(
@@ -67,6 +70,20 @@ export const SchemaProvider = ({ children }: { children: ReactNode }) => {
     handleBackgroundSave(id, data?.name || "", clonedSchema);
   };
 
+  const handleChange = ({ key, value, address }: SchemaChangeType) => {
+    const clonedSchema = JSON.parse(JSON.stringify(schema)) as FieldType[];
+    const indexes = address.split(".");
+    const lastIndex = indexes.pop();
+    const fields = getTargetItems(indexes, clonedSchema);
+    const property = fields[Number(lastIndex)];
+    if (property) {
+      property[key] = value;
+    }
+
+    setSchema(clonedSchema);
+    handleBackgroundSave(id, data?.name || "", clonedSchema);
+  };
+
   const handleBackgroundSave = useMemo(
     () =>
       debounce((id: string, name: string, schema: FieldType[]) => {
@@ -94,6 +111,7 @@ export const SchemaProvider = ({ children }: { children: ReactNode }) => {
         setSchema,
         handleAdd,
         handleClone,
+        handleChange,
         handleRemove,
         name: data?.name || "",
       }}

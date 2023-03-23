@@ -1,6 +1,7 @@
 import { DocumentDuplicateIcon, TrashIcon } from "@heroicons/react/24/outline";
 
 import { useSchemaContext } from "~/contexts";
+import { type FieldType } from "~/types/schema.types";
 import { generateGroupStyle } from "~/utils/generateGroupStyle";
 
 export const Property = ({
@@ -9,26 +10,35 @@ export const Property = ({
   address,
 }: {
   name: string;
+  value: string;
   address: string;
   className?: string;
-  value: string | number;
 }) => {
-  const { handleClone, handleRemove } = useSchemaContext();
+  const { handleClone, handleRemove, handleChange } = useSchemaContext();
   const groupStyles = generateGroupStyle(address);
+
+  const handleOnChange = (
+    key: Exclude<keyof FieldType, "fields">,
+    value: string
+  ) => {
+    handleChange({ address, key, value });
+  };
 
   return (
     <div
       className={`flex items-center justify-between space-x-4  bg-sky-100 p-4 ${groupStyles}`}
     >
       <input
-        className="h-9 w-96 rounded-md border p-2 text-gray-700 "
-        placeholder="Property Name"
         defaultValue={name}
+        placeholder="Property Name"
+        className="h-9 w-96 rounded-md border p-2 text-gray-700 "
+        onChange={(event) => handleOnChange("name", event.target.value)}
       />
       <input
-        className="h-9 w-96 flex-1 rounded-md border p-2 text-gray-700"
-        placeholder="Property Value"
         defaultValue={value}
+        placeholder="Property Value"
+        onChange={(event) => handleOnChange("value", event.target.value)}
+        className="h-9 w-96 flex-1 rounded-md border p-2 text-gray-700"
       />
       <div className="flex space-x-2">
         <button
