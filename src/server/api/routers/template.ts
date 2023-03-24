@@ -65,23 +65,26 @@ export const templateRouter = createTRPCRouter({
       }
     }),
 
-  getAll: publicProcedure.query(async ({ ctx }) => {
-    try {
-      return await ctx.prisma.template.findMany({
-        include: {
-          schemaTemplate: {
-            select: {
-              id: true,
-              schema: true,
-              name: true,
+  getAll: publicProcedure
+    .input(z.object({ isCustom: z.boolean().default(false) }))
+    .query(async ({ ctx, input }) => {
+      try {
+        return await ctx.prisma.template.findMany({
+          where: { isCustom: input.isCustom },
+          include: {
+            schemaTemplate: {
+              select: {
+                id: true,
+                schema: true,
+                name: true,
+              },
             },
           },
-        },
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  }),
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    }),
 
   delete: publicProcedure
     .input(

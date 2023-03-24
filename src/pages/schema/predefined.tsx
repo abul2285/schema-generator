@@ -33,8 +33,7 @@ const Predefined = () => {
 };
 
 const DefaultSchema = () => {
-  const { data, isLoading } = api.template.getAll.useQuery();
-  console.log({ data });
+  const { data, isLoading } = api.template.getAll.useQuery({ isCustom: false });
 
   if (isLoading) return <p>Loading....</p>;
   if (!data) return <p>Default Template Not Found</p>;
@@ -57,16 +56,23 @@ const DefaultSchema = () => {
 };
 
 const UserDefinedSchema = () => {
-  const s = ["Custom-1", "Custom-2", "Custom-3", "Custom-4", "Custom-5"];
+  const { data, isLoading } = api.template.getAll.useQuery({ isCustom: true });
+
+  if (isLoading) return <p>Loading....</p>;
+  if (!data) return <p>Default Template Not Found</p>;
+
   return (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-      {s.map((schema, idx) => (
+      {data.map((template, idx) => (
         <div key={idx} className="flex justify-between border px-2 py-4">
-          {schema}
+          {template.name}
 
-          <button className="flex border-l pl-2">
+          <Link
+            className="flex border-l pl-2"
+            href={`/schema/view/${template.schemaId}`}
+          >
             <PlusCircleIcon className="mr-2 h-6 w-6" /> Use
-          </button>
+          </Link>
         </div>
       ))}
     </div>
