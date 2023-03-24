@@ -18,7 +18,7 @@ import { useSchemaContext } from "~/contexts";
 import { type FieldType } from "~/types/schema.types";
 
 type Field = {
-  [key: string]: string | Field | Field[];
+  [key: string]: string | Field | (Field | string)[];
 };
 
 const generateJSON_LD = (schema: FieldType[]) => {
@@ -28,7 +28,11 @@ const generateJSON_LD = (schema: FieldType[]) => {
         const _fields = jsonLD(fields);
 
         if (acc[name]) {
-          acc[name] = [acc[name] as Field, _fields];
+          if (Array.isArray(acc[name])) {
+            acc[name] = [...(acc[name] as Field[]), _fields];
+          } else {
+            acc[name] = [acc[name] as Field, _fields];
+          }
         } else {
           acc = {
             ...acc,
@@ -36,7 +40,15 @@ const generateJSON_LD = (schema: FieldType[]) => {
           };
         }
       } else {
-        acc = { ...acc, [name]: value };
+        if (acc[name]) {
+          if (Array.isArray(acc[name])) {
+            acc[name] = [...(acc[name] as string[]), value];
+          } else {
+            acc[name] = [acc[name] as string, value];
+          }
+        } else {
+          acc = { ...acc, [name]: value };
+        }
       }
       return acc;
     }, {});
