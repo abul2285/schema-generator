@@ -2,7 +2,6 @@ import Link from "next/link";
 import debounce from "lodash/debounce";
 import { type ChangeEvent, useMemo } from "react";
 import {
-  HomeIcon,
   TrashIcon,
   PlusCircleIcon,
   CheckCircleIcon,
@@ -10,14 +9,10 @@ import {
 } from "@heroicons/react/24/outline";
 
 import { api } from "~/utils/api";
-import {
-  NavItem,
-  Navigation,
-  NavItemWrapper,
-} from "~/components/Layout/Navigation";
+import { NavItem, NavItemWrapper } from "~/components/Layout/Navigation";
 import { useSchemaContext } from "~/contexts";
-import { type FieldType } from "~/types/schema.types";
 import { RenderSchemaFields } from "~/components/RenderSchemaField";
+import { Head } from "~/components/Layout/Head";
 
 const Custom = () => {
   const { name, schema, isLoading, setSchema, id } = useSchemaContext();
@@ -27,15 +22,10 @@ const Custom = () => {
     },
   });
 
-  const { mutate: updateSchema } = api.scheme.updateSchema.useMutation();
+  const { mutate: createTemplate, isLoading: isTemplateCreating } =
+    api.template.create.useMutation();
 
-  const handleBackgroundSave = useMemo(
-    () =>
-      debounce((name: string, schema: FieldType[]) => {
-        createSchema({ name, schema: JSON.stringify(schema) });
-      }, 1000),
-    [createSchema]
-  );
+  const { mutate: updateSchema } = api.scheme.updateSchema.useMutation();
 
   const handleAddProperty = () => {
     const payload = [...schema, { name: "", value: "" }];
@@ -63,28 +53,20 @@ const Custom = () => {
 
   return (
     <>
-      <Navigation>
-        <NavItemWrapper>
-          <Link href="/">
-            <NavItem hoverAble>
-              <HomeIcon className="mr-1 h-6 w-6" />
-              Back To Home
-            </NavItem>
-          </Link>
-          <Link href="/schema/custom">
-            <NavItem hoverAble>
-              <PlusCircleIcon className="mr-1 h-6 w-6" />
-              Edit Schema
-            </NavItem>
-          </Link>
-          <Link href="/schema/validation">
-            <NavItem hoverAble>
-              <ShieldCheckIcon className="mr-1 h-6 w-6" />
-              Validate Schema
-            </NavItem>
-          </Link>
-        </NavItemWrapper>
-      </Navigation>
+      <Head>
+        <Link href="/schema/custom">
+          <NavItem hoverAble>
+            <PlusCircleIcon className="mr-1 h-6 w-6" />
+            Edit Schema
+          </NavItem>
+        </Link>
+        <Link href="/schema/validation">
+          <NavItem hoverAble>
+            <ShieldCheckIcon className="mr-1 h-6 w-6" />
+            Validate Schema
+          </NavItem>
+        </Link>
+      </Head>
       <main>
         <div className="flex items-center justify-between bg-sky-300 px-4">
           <input
@@ -109,11 +91,13 @@ const Custom = () => {
               Add Group
             </NavItem>
             <NavItem
-              className="flex-1 justify-end"
-              onClick={() => handleBackgroundSave(name, schema)}
+              className="justify-end"
+              onClick={() =>
+                createTemplate({ name, isCustom: true, schemaId: id })
+              }
             >
               <CheckCircleIcon className="mr-1 h-6 w-6" />
-              Save
+              Save as template
             </NavItem>
             <NavItem className="hover:border-b-transparent">
               <TrashIcon className="mr-1 h-6 w-6" />

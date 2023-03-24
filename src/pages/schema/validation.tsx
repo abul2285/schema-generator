@@ -1,46 +1,16 @@
 import Link from "next/link";
-import Highlight from "react-highlight";
-import "highlight.js/styles/shades-of-purple.css";
 import {
-  HomeIcon,
   CheckIcon,
   PlusCircleIcon,
   ShieldCheckIcon,
   ClipboardDocumentCheckIcon,
 } from "@heroicons/react/24/outline";
 
-import {
-  NavItem,
-  Navigation,
-  NavItemWrapper,
-} from "~/components/Layout/Navigation";
+import { NavItem } from "~/components/Layout/Navigation";
+import Board from "~/components/Board/Board";
 import { useSchemaContext } from "~/contexts";
-import { type FieldType } from "~/types/schema.types";
-
-type Field = {
-  [key: string]: string | Field | (Field | string)[];
-};
-
-const generateJSON_LD = (schema: FieldType[]) => {
-  const jsonLD = (schema: FieldType[]): Field => {
-    return schema.reduce((acc: Field, { name, value = "", fields }) => {
-      const _value: string | Field = fields ? jsonLD(fields) : value;
-
-      if (acc[name]) {
-        if (!Array.isArray(acc[name])) {
-          acc[name] = [acc[name] as typeof _value, _value];
-        } else {
-          acc[name] = [...(acc[name] as (typeof _value)[]), _value];
-        }
-      } else {
-        acc = { ...acc, [name]: _value };
-      }
-      return acc;
-    }, {});
-  };
-
-  return jsonLD(schema);
-};
+import { generateJSON_LD } from "~/utils/generateJSON_LD";
+import { Head } from "~/components/Layout/Head";
 
 const Predefined = () => {
   const { schema } = useSchemaContext();
@@ -57,28 +27,20 @@ const Predefined = () => {
 
   return (
     <>
-      <Navigation>
-        <NavItemWrapper>
-          <Link href="/">
-            <NavItem hoverAble>
-              <HomeIcon className="mr-1 h-6 w-6" />
-              Back To Home
-            </NavItem>
-          </Link>
-          <Link href="/schema/custom">
-            <NavItem hoverAble>
-              <PlusCircleIcon className="mr-1 h-6 w-6" />
-              Edit Schema
-            </NavItem>
-          </Link>
-          <Link href="/schema/validation">
-            <NavItem hoverAble>
-              <ShieldCheckIcon className="mr-1 h-6 w-6" />
-              Validate Schema
-            </NavItem>
-          </Link>
-        </NavItemWrapper>
-      </Navigation>
+      <Head>
+        <Link href="/schema/custom">
+          <NavItem hoverAble>
+            <PlusCircleIcon className="mr-1 h-6 w-6" />
+            Edit Schema
+          </NavItem>
+        </Link>
+        <Link href="/schema/validation">
+          <NavItem hoverAble>
+            <ShieldCheckIcon className="mr-1 h-6 w-6" />
+            Validate Schema
+          </NavItem>
+        </Link>
+      </Head>
       <main className="mx-8 h-screen">
         <div className="mt-6 mb-4 flex justify-between text-sm">
           <span>JSON-LD</span>
@@ -108,7 +70,7 @@ const Predefined = () => {
             </button>
           </div>
         </div>
-        <Highlight>{JSON.stringify(jsonLD, null, 4)}</Highlight>
+        <Board jsonLD={jsonLD} />
       </main>
     </>
   );

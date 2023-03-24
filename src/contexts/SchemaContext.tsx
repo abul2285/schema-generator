@@ -27,7 +27,7 @@ export const SchemaProvider = ({ children }: { children: ReactNode }) => {
   const id = isBrowser ? localStorage.getItem("schemaId") || "" : "";
   const { mutate: updateSchema } = api.scheme.updateSchema.useMutation();
 
-  const { data, isLoading } = api.scheme.getSchemaById.useQuery({ id });
+  const { data, isLoading } = api.scheme.getById.useQuery({ id });
 
   const handleAdd = (address: string, type: SchemaFieldType) => {
     const clonedSchema = JSON.parse(JSON.stringify(schema)) as FieldType[];

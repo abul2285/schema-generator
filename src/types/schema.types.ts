@@ -8,3 +8,7 @@ export enum SchemaFieldType {
   GROUP = "GROUP",
   PROPERTY = "PROPERTY",
 }
+
+export type Field = {
+  [key: string]: string | Field | (Field | string)[];
+};
