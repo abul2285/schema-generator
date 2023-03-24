@@ -66,7 +66,7 @@ export const schemaRouter = createTRPCRouter({
       console.log(error);
     }
   }),
-  getSchemaById: publicProcedure
+  getById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const { prisma } = ctx;

@@ -66,7 +66,16 @@ model VerificationToken {
 }
 
 model Schema {
-    id     String @id @default(uuid())
-    name   String
-    schema String
+    id       String    @id @default(uuid())
+    name     String
+    schema   String
+    template Template?
+}
+
+model Template {
+    id             String   @id @default(uuid())
+    name           String
+    isCustom       Boolean? @default(false)
+    schemaTemplate Schema   @relation(references: [id], fields: [schemaId])
+    schemaId       String   @unique
 }
