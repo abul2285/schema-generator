@@ -24,31 +24,16 @@ type Field = {
 const generateJSON_LD = (schema: FieldType[]) => {
   const jsonLD = (schema: FieldType[]): Field => {
     return schema.reduce((acc: Field, { name, value = "", fields }) => {
-      if (fields) {
-        const _fields = jsonLD(fields);
+      const _value: string | Field = fields ? jsonLD(fields) : value;
 
-        if (acc[name]) {
-          if (Array.isArray(acc[name])) {
-            acc[name] = [...(acc[name] as Field[]), _fields];
-          } else {
-            acc[name] = [acc[name] as Field, _fields];
-          }
+      if (acc[name]) {
+        if (!Array.isArray(acc[name])) {
+          acc[name] = [acc[name] as typeof _value, _value];
         } else {
-          acc = {
-            ...acc,
-            [name]: _fields,
-          };
+          acc[name] = [...(acc[name] as (typeof _value)[]), _value];
         }
       } else {
-        if (acc[name]) {
-          if (Array.isArray(acc[name])) {
-            acc[name] = [...(acc[name] as string[]), value];
-          } else {
-            acc[name] = [acc[name] as string, value];
-          }
-        } else {
-          acc = { ...acc, [name]: value };
-        }
+        acc = { ...acc, [name]: _value };
       }
       return acc;
     }, {});
