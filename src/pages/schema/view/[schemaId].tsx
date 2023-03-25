@@ -1,10 +1,9 @@
 import { useRouter } from "next/router";
-import React from "react";
 import Board from "~/components/Board/Board";
 import { Head } from "~/components/Layout/Head";
 import {
-  Navigation,
   NavItem,
+  Navigation,
   NavItemWrapper,
 } from "~/components/Layout/Navigation";
 import { type FieldType } from "~/types/schema.types";
@@ -24,11 +23,15 @@ const SchemaTemplate = () => {
   const jsonLD = generateJSON_LD(JSON.parse(data.schema) as FieldType[]);
   return (
     <>
-      <Head>
-        <NavItem hoverAble>JSON-LD</NavItem>
+      <Head />
 
-        <NavItem hoverAble>Structure</NavItem>
-      </Head>
+      <Navigation submenu>
+        <NavItemWrapper>
+          <NavItem hoverAble>JSON-LD</NavItem>
+
+          <NavItem hoverAble>Structure</NavItem>
+        </NavItemWrapper>
+      </Navigation>
       <main className="m-8 h-screen">
         <Board jsonLD={jsonLD} />
       </main>

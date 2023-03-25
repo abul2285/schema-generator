@@ -1,51 +1,126 @@
-import React from "react";
+import debounce from "lodash/debounce";
+import { type ChangeEvent, useMemo, useState } from "react";
+import {
+  TrashIcon,
+  PlusCircleIcon,
+  CheckCircleIcon,
+  ShieldCheckIcon,
+} from "@heroicons/react/24/outline";
+
+import { api } from "~/utils/api";
 import {
   Navigation,
   NavItem,
   NavItemWrapper,
 } from "~/components/Layout/Navigation";
+import { useSchemaContext } from "~/contexts";
+import { Head } from "~/components/Layout/Head";
+import { Validate } from "~/components/Validate";
+import { RenderSchemaFields } from "~/components/RenderSchemaField";
 
-const CreateNew = () => {
+const Custom = () => {
+  const [validate, setValidate] = useState(false);
+  const { name, schema, isLoading, setSchema, id } = useSchemaContext();
+  const { mutate: createSchema } = api.scheme.create.useMutation({
+    onSuccess: (data) => {
+      localStorage.setItem("schemaId", data?.id || "");
+    },
+  });
+
+  const { mutate: createTemplate, isLoading: isTemplateCreating } =
+    api.template.create.useMutation();
+
+  const { mutate: updateSchema } = api.scheme.updateSchema.useMutation();
+
+  const handleAddProperty = () => {
+    const payload = [...schema, { name: "", value: "" }];
+    setSchema(payload);
+  };
+  const handleAddGroup = () => {
+    const payload = [...schema, { name: "", fields: [] }];
+    setSchema(payload);
+  };
+
+  const handleNameChange = useMemo(
+    () =>
+      debounce((event: ChangeEvent<HTMLInputElement>) => {
+        const { value } = event.target;
+        const payload = { name: value, schema: JSON.stringify(schema) };
+        if (id) {
+          return updateSchema({ ...payload, id });
+        }
+        createSchema(payload);
+      }, 3000),
+    [createSchema, id, schema, updateSchema]
+  );
+
+  if (isLoading) return <p>loading...</p>;
+
   return (
-    <Navigation>
-      <NavItemWrapper>
-        <NavItem>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="1.5"
-            stroke="currentColor"
-            className="mr-1 h-6 w-6"
+    <>
+      <Head />
+      <Navigation submenu>
+        <NavItemWrapper>
+          <NavItem hoverAble onClick={() => setValidate(false)}>
+            <PlusCircleIcon className="mr-1 h-6 w-6" />
+            Edit Schema
+          </NavItem>
+
+          <NavItem hoverAble onClick={() => setValidate(true)}>
+            <ShieldCheckIcon className="mr-1 h-6 w-6" />
+            Validate Schema
+          </NavItem>
+
+          <NavItem
+            className="justify-end"
+            onClick={() =>
+              createTemplate({ name, isCustom: true, schemaId: id })
+            }
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M6 10.5h2.25a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v2.25A2.25 2.25 0 006 10.5zm0 9.75h2.25A2.25 2.25 0 0010.5 18v-2.25a2.25 2.25 0 00-2.25-2.25H6a2.25 2.25 0 00-2.25 2.25V18A2.25 2.25 0 006 20.25zm9.75-9.75H18a2.25 2.25 0 002.25-2.25V6A2.25 2.25 0 0018 3.75h-2.25A2.25 2.25 0 0013.5 6v2.25a2.25 2.25 0 002.25 2.25z"
+            <CheckCircleIcon className="mr-1 h-6 w-6" />
+            Save as template
+          </NavItem>
+          <NavItem hoverAble className="hover:border-b-transparent">
+            <TrashIcon className="mr-1 h-6 w-6" />
+            Delete
+          </NavItem>
+        </NavItemWrapper>
+      </Navigation>
+      {validate ? (
+        <Validate schema={schema} />
+      ) : (
+        <main className="p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <input
+              defaultValue={name}
+              onChange={handleNameChange}
+              placeholder="Schema Name"
+              className="h-9 w-96 rounded-md border border-sky-900 bg-sky-100 p-2 text-sky-900 "
             />
-          </svg>
-          Predefined Templates
-        </NavItem>
-        <NavItem>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="mr-1 h-6 w-6"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          Custom Template
-        </NavItem>
-      </NavItemWrapper>
-    </Navigation>
+
+            <div className="flex space-x-2">
+              <button
+                onClick={handleAddProperty}
+                className="flex self-center rounded-md bg-sky-300 p-2 hover:border-b-transparent"
+              >
+                <PlusCircleIcon className="mr-1 h-6 w-6" />
+                Add Property
+              </button>
+
+              <button
+                onClick={handleAddGroup}
+                className="flex self-center rounded-md bg-sky-300 p-2 hover:border-b-transparent"
+              >
+                <PlusCircleIcon className="mr-1 h-6 w-6" />
+                Add Group
+              </button>
+            </div>
+          </div>
+          <RenderSchemaFields fields={schema || []} />
+        </main>
+      )}
+    </>
   );
 };
 
-export default CreateNew;
+export default Custom;
