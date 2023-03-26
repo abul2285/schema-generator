@@ -1,18 +1,18 @@
 import Link from "next/link";
 import { useState } from "react";
 import {
-  PlusCircleIcon,
   BarsArrowUpIcon,
   BarsArrowDownIcon,
 } from "@heroicons/react/24/outline";
 
+import { api } from "~/utils/api";
+import { Card } from "~/components/Card";
+import { Head } from "~/components/Layout/Head";
 import {
-  Navigation,
   NavItem,
+  Navigation,
   NavItemWrapper,
 } from "~/components/Layout/Navigation";
-import { api } from "~/utils/api";
-import { Head } from "~/components/Layout/Head";
 
 const Predefined = () => {
   const [type, setType] = useState<string>("default");
@@ -53,17 +53,12 @@ const DefaultSchema = () => {
   if (!data) return <p>Default Template Not Found</p>;
   return (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-      {data.map((template, idx) => (
-        <div key={idx} className="flex justify-between border px-2 py-4">
-          {template.name}
-
-          <Link
-            className="flex border-l pl-2"
-            href={`/schema/view/${template.schemaId}`}
-          >
-            <PlusCircleIcon className="mr-2 h-6 w-6" /> Use
-          </Link>
-        </div>
+      {data.map((template) => (
+        <Card
+          key={template.id}
+          name={template.name}
+          schemaId={template.schemaId}
+        />
       ))}
     </div>
   );
@@ -77,17 +72,12 @@ const UserDefinedSchema = () => {
 
   return (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-      {data.map((template, idx) => (
-        <div key={idx} className="flex justify-between border px-2 py-4">
-          {template.name}
-
-          <Link
-            className="flex border-l pl-2"
-            href={`/schema/view/${template.schemaId}`}
-          >
-            <PlusCircleIcon className="mr-2 h-6 w-6" /> Use
-          </Link>
-        </div>
+      {data.map((template) => (
+        <Card
+          key={template.id}
+          name={template.name}
+          schemaId={template.schemaId}
+        />
       ))}
     </div>
   );

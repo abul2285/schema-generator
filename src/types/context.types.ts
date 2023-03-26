@@ -8,6 +8,7 @@ export type SchemaContextValueType = {
   schema: FieldType[];
   handleClone: (string: string) => void;
   handleRemove: (string: string) => void;
+  handleNameChange: ({ name }: { name: string }) => void;
   setSchema: (value: SetStateAction<FieldType[]>) => void;
   handleAdd: (address: string, type: SchemaFieldType) => void;
   handleChange: ({ address, key, value }: SchemaChangeType) => void;

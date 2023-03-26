@@ -9,13 +9,13 @@ import {
 import debounce from "lodash/debounce";
 
 import { api } from "~/utils/api";
-import { isBrowser } from "~/utils/isBrowser";
 import { getTargetItems } from "~/utils/schema";
 import {
   type SchemaChangeType,
   type SchemaContextValueType,
 } from "~/types/context.types";
 import { SchemaFieldType, type FieldType } from "~/types/schema.types";
+import { useRouter } from "next/router";
 
 const SchemaContext = createContext<SchemaContextValueType>(
   {} as SchemaContextValueType
@@ -24,7 +24,16 @@ const Provider = SchemaContext.Provider;
 
 export const SchemaProvider = ({ children }: { children: ReactNode }) => {
   const [schema, setSchema] = useState<FieldType[]>([]);
-  const id = isBrowser ? localStorage.getItem("schemaId") || "" : "";
+  const router = useRouter();
+  const { schemaId } = router.query;
+  const id = schemaId ? String(schemaId) : "";
+  const { mutate: createSchema } = api.scheme.create.useMutation({
+    onSuccess: (data) => {
+      if (!data) return;
+      void router.push(`/schema/${data.id}`);
+    },
+  });
+
   const { mutate: updateSchema } = api.scheme.updateSchema.useMutation();
 
   const { data, isLoading } = api.scheme.getById.useQuery({ id });
@@ -42,7 +51,7 @@ export const SchemaProvider = ({ children }: { children: ReactNode }) => {
     }
     fields.push(payload);
     setSchema(clonedSchema);
-    handleBackgroundSave(id, data?.name || "", clonedSchema);
+    handleBackgroundSave(data?.name || "", clonedSchema);
   };
 
   const handleRemove = (address: string) => {
@@ -54,7 +63,7 @@ export const SchemaProvider = ({ children }: { children: ReactNode }) => {
       fields.splice(Number(lastIndex), 1);
     }
     setSchema(clonedSchema);
-    handleBackgroundSave(id, data?.name || "", clonedSchema);
+    handleBackgroundSave(data?.name || "", clonedSchema);
   };
 
   const handleClone = (address: string) => {
@@ -67,7 +76,7 @@ export const SchemaProvider = ({ children }: { children: ReactNode }) => {
       fields.splice(Number(lastIndex), 0, property);
     }
     setSchema(clonedSchema);
-    handleBackgroundSave(id, data?.name || "", clonedSchema);
+    handleBackgroundSave(data?.name || "", clonedSchema);
   };
 
   const handleChange = ({ key, value, address }: SchemaChangeType) => {
@@ -81,25 +90,37 @@ export const SchemaProvider = ({ children }: { children: ReactNode }) => {
     }
 
     setSchema(clonedSchema);
-    handleBackgroundSave(id, data?.name || "", clonedSchema);
+    handleBackgroundSave(data?.name || "", clonedSchema);
+  };
+
+  const handleNameChange = ({ name }: { name: string }) => {
+    const clonedSchema = JSON.parse(JSON.stringify(schema)) as FieldType[];
+    setSchema(clonedSchema);
+    handleBackgroundSave(name, clonedSchema);
   };
 
   const handleBackgroundSave = useMemo(
     () =>
-      debounce((id: string, name: string, schema: FieldType[]) => {
-        updateSchema({
-          id,
+      debounce((name: string, schema: FieldType[]) => {
+        const payload: { id?: string; name: string; schema: string } = {
           name,
           schema: JSON.stringify(schema),
-        });
+        };
+        if (id) {
+          updateSchema({
+            id,
+            ...payload,
+          });
+        } else {
+          createSchema(payload);
+        }
       }, 3000),
-    [updateSchema]
+    [createSchema, id, updateSchema]
   );
 
   useEffect(() => {
-    if (data) {
-      setSchema(JSON.parse(data.schema) as FieldType[]);
-    }
+    const schema = (data ? JSON.parse(data.schema) : []) as FieldType[];
+    setSchema(schema);
   }, [data]);
 
   return (
@@ -113,6 +134,7 @@ export const SchemaProvider = ({ children }: { children: ReactNode }) => {
         handleClone,
         handleChange,
         handleRemove,
+        handleNameChange,
         name: data?.name || "",
       }}
     >
