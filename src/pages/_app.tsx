@@ -6,6 +6,7 @@ import { api } from "~/utils/api";
 
 import "~/styles/globals.css";
 import { SchemaProvider } from "~/contexts";
+import { Head } from "~/components/Layout/Head";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -14,6 +15,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
   return (
     <SessionProvider session={session}>
       <SchemaProvider>
+        <Head />
         <Component {...pageProps} />
       </SchemaProvider>
     </SessionProvider>

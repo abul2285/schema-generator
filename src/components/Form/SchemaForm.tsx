@@ -48,7 +48,6 @@ export const SchemaForm = ({ id }: { id?: string }) => {
 
   return (
     <>
-      <Head />
       <Navigation submenu>
         <NavItemWrapper>
           <NavItem hoverAble onClick={() => setValidate(false)}>
@@ -84,7 +83,7 @@ export const SchemaForm = ({ id }: { id?: string }) => {
         <Validate schema={schema} />
       ) : (
         <main className="p-4">
-          <div className="mb-2 flex items-center justify-between">
+          <div className="mb-2 flex items-center justify-between gap-3">
             <input
               defaultValue={name}
               onChange={handleChange}
