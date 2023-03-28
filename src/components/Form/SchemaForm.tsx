@@ -1,5 +1,5 @@
-import debounce from "lodash/debounce";
-import { type ChangeEvent, useMemo, useState } from "react";
+import { useRouter } from "next/router";
+import { type ChangeEvent, useState, useEffect } from "react";
 import {
   TrashIcon,
   PlusCircleIcon,
@@ -7,24 +7,48 @@ import {
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 
-import { api } from "~/utils/api";
+import { useSchemaContext } from "~/contexts";
+import { Validate } from "~/components/Validate";
+import { api, type RouterOutputs } from "~/utils/api";
+import { RenderSchemaFields } from "~/components/RenderSchemaField";
 import {
-  Navigation,
   NavItem,
+  Navigation,
   NavItemWrapper,
 } from "~/components/Layout/Navigation";
-import { useSchemaContext } from "~/contexts";
-import { Head } from "~/components/Layout/Head";
-import { Validate } from "~/components/Validate";
-import { RenderSchemaFields } from "~/components/RenderSchemaField";
+
+const loadInitialData = (data: RouterOutputs["scheme"]["getById"]) => {
+  return { name: data?.name || "", description: data?.description || "" };
+};
 
 export const SchemaForm = ({ id }: { id?: string }) => {
   const [validate, setValidate] = useState(false);
-  const { name, schema, isLoading, setSchema, handleNameChange } =
-    useSchemaContext();
+  const router = useRouter();
+  const { data, schema, isLoading, setSchema } = useSchemaContext();
+  const [{ name, description }, setSchemaDetails] = useState<{
+    name: string;
+    description: string;
+  }>(() => loadInitialData(data));
+
+  console.log({ name, description });
 
   const { mutate: createTemplate, isLoading: isTemplateCreating } =
-    api.template.create.useMutation();
+    api.template.create.useMutation({
+      onSuccess: (data) => {
+        if (data) {
+          void router.push("/schemas?type=custom");
+        }
+      },
+    });
+
+  const { mutate: createSchema } = api.scheme.create.useMutation({
+    onSuccess: (data) => {
+      if (!data) return;
+      void router.push(`/schema/${data.id}`);
+    },
+  });
+
+  const { mutate: updateSchema } = api.scheme.updateSchema.useMutation();
 
   const handleAddProperty = () => {
     const payload = [...schema, { name: "", value: "" }];
@@ -35,14 +59,16 @@ export const SchemaForm = ({ id }: { id?: string }) => {
     setSchema(payload);
   };
 
-  const handleChange = useMemo(
-    () =>
-      debounce((event: ChangeEvent<HTMLInputElement>) => {
-        const { value } = event.target;
-        handleNameChange({ name: value });
-      }, 3000),
-    [handleNameChange]
-  );
+  const handleChange = (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { value, name } = event.target;
+    setSchemaDetails((prev) => ({ ...prev, [name]: value }));
+  };
+
+  useEffect(() => {
+    setSchemaDetails(loadInitialData(data));
+  }, [data, id]);
 
   if (isLoading) return <p>loading...</p>;
 
@@ -63,20 +89,48 @@ export const SchemaForm = ({ id }: { id?: string }) => {
           <NavItem
             className="justify-end"
             onClick={() => {
+              const payload: {
+                name: string;
+                schema: string;
+                isCustom: boolean;
+                description: string;
+              } = {
+                name,
+                description,
+                isCustom: true,
+                schema: JSON.stringify(schema),
+              };
               if (id) {
-                createTemplate({ name, isCustom: true, schemaId: id });
+                updateSchema({
+                  id,
+                  ...payload,
+                });
               } else {
-                alert("No id provided");
+                createSchema(payload);
               }
             }}
           >
             <CheckCircleIcon className="mr-1 h-6 w-6" />
-            Save as template
+            Save
           </NavItem>
           <NavItem hoverAble className="hover:border-b-transparent">
             <TrashIcon className="mr-1 h-6 w-6" />
             Delete
           </NavItem>
+          {id && (
+            <>
+              <div className="flex-1" />
+              <NavItem
+                className="justify-end"
+                onClick={() =>
+                  createTemplate({ name, isCustom: true, schemaId: id })
+                }
+              >
+                <CheckCircleIcon className="mr-1 h-6 w-6" />
+                Save as template
+              </NavItem>
+            </>
+          )}
         </NavItemWrapper>
       </Navigation>
       {validate ? (
@@ -85,7 +139,8 @@ export const SchemaForm = ({ id }: { id?: string }) => {
         <main className="p-4">
           <div className="mb-2 flex items-center justify-between gap-3">
             <input
-              defaultValue={name}
+              name="name"
+              value={name}
               onChange={handleChange}
               placeholder="Schema Name"
               className="h-9 w-96 rounded-md border border-sky-900 bg-sky-100 p-2 text-sky-900 "
@@ -110,6 +165,13 @@ export const SchemaForm = ({ id }: { id?: string }) => {
             </div>
           </div>
           <RenderSchemaFields fields={schema || []} />
+          <textarea
+            value={description}
+            name="description"
+            onChange={handleChange}
+            placeholder="Description"
+            className="h-24 w-full rounded-md border border-sky-900 bg-sky-100 p-2 text-sky-900 "
+          />
         </main>
       )}
     </>
