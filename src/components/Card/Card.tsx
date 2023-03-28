@@ -87,6 +87,7 @@ export const Card = (template: {
                   schema: template.schema,
                   name: `${template.name} copy`,
                   isCustom: template.isCustom,
+                  description: "fallback description",
                 })
               }
             >
