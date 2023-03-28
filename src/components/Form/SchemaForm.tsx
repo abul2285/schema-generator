@@ -30,13 +30,26 @@ export const SchemaForm = ({ id }: { id?: string }) => {
     description: string;
   }>(() => loadInitialData(data));
 
-  console.log({ name, description });
+  const { data: template, refetch } = api.template.getBySchemaId.useQuery({
+    schemaId: id || "",
+  });
+
+  console.log({ name, description, template });
 
   const { mutate: createTemplate, isLoading: isTemplateCreating } =
     api.template.create.useMutation({
       onSuccess: (data) => {
         if (data) {
-          void router.push("/schemas?type=custom");
+          void refetch();
+          handleSaveOrUpdate();
+        }
+      },
+    });
+  const { mutate: updateTemplate, isLoading: isTemplateUpdating } =
+    api.template.update.useMutation({
+      onSuccess: (data) => {
+        if (data) {
+          handleSaveOrUpdate();
         }
       },
     });
@@ -66,6 +79,28 @@ export const SchemaForm = ({ id }: { id?: string }) => {
     setSchemaDetails((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleSaveOrUpdate = () => {
+    const payload: {
+      name: string;
+      schema: string;
+      isCustom: boolean;
+      description: string;
+    } = {
+      name,
+      description,
+      isCustom: true,
+      schema: JSON.stringify(schema),
+    };
+    if (id) {
+      updateSchema({
+        id,
+        ...payload,
+      });
+    } else {
+      createSchema(payload);
+    }
+  };
+
   useEffect(() => {
     setSchemaDetails(loadInitialData(data));
   }, [data, id]);
@@ -86,30 +121,7 @@ export const SchemaForm = ({ id }: { id?: string }) => {
             Validate Schema
           </NavItem>
 
-          <NavItem
-            className="justify-end"
-            onClick={() => {
-              const payload: {
-                name: string;
-                schema: string;
-                isCustom: boolean;
-                description: string;
-              } = {
-                name,
-                description,
-                isCustom: true,
-                schema: JSON.stringify(schema),
-              };
-              if (id) {
-                updateSchema({
-                  id,
-                  ...payload,
-                });
-              } else {
-                createSchema(payload);
-              }
-            }}
-          >
+          <NavItem className="justify-end" onClick={handleSaveOrUpdate}>
             <CheckCircleIcon className="mr-1 h-6 w-6" />
             Save
           </NavItem>
@@ -122,9 +134,13 @@ export const SchemaForm = ({ id }: { id?: string }) => {
               <div className="flex-1" />
               <NavItem
                 className="justify-end"
-                onClick={() =>
-                  createTemplate({ name, isCustom: true, schemaId: id })
-                }
+                onClick={() => {
+                  if (template?.id) {
+                    updateTemplate({ id: template.id, name });
+                  } else {
+                    createTemplate({ name, isCustom: true, schemaId: id });
+                  }
+                }}
               >
                 <CheckCircleIcon className="mr-1 h-6 w-6" />
                 Save as template

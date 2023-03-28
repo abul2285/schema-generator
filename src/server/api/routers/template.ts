@@ -19,13 +19,42 @@ export const templateRouter = createTRPCRouter({
         console.log(error);
       }
     }),
+  duplicate: publicProcedure
+    .input(
+      z.object({
+        name: z.string(),
+        schema: z.string(),
+        description: z.string(),
+        isCustom: z.boolean().optional().default(false),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { name, schema, isCustom, description } = input;
+      try {
+        return await ctx.prisma.template.create({
+          data: {
+            name,
+            isCustom,
+            schemaTemplate: {
+              create: {
+                name,
+                schema,
+                description,
+                isCustom,
+              },
+            },
+          },
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    }),
 
   update: publicProcedure
     .input(
       z.object({
         id: z.string(),
         name: z.string(),
-        schemaId: z.string(),
         isCustom: z.boolean().optional().default(false),
       })
     )
@@ -58,6 +87,24 @@ export const templateRouter = createTRPCRouter({
                 name: true,
               },
             },
+          },
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    }),
+
+  getBySchemaId: publicProcedure
+    .input(
+      z.object({
+        schemaId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        return await ctx.prisma.template.findUnique({
+          where: {
+            schemaId: input.schemaId,
           },
         });
       } catch (error) {
