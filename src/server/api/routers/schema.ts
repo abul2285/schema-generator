@@ -7,18 +7,16 @@ export const schemaRouter = createTRPCRouter({
       z.object({
         name: z.string(),
         schema: z.string(),
+        description: z.string(),
+        isCustom: z.boolean().optional().default(false),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const { prisma } = ctx;
-      const { name, schema } = input;
 
       try {
         return await prisma.schema.create({
-          data: {
-            name,
-            schema,
-          },
+          data: input,
         });
       } catch (error) {
         console.log(error);
@@ -30,6 +28,8 @@ export const schemaRouter = createTRPCRouter({
         id: z.string(),
         name: z.string(),
         schema: z.string(),
+        description: z.string(),
+        isCustom: z.boolean().optional().default(false),
       })
     )
     .mutation(async ({ ctx, input }) => {

@@ -66,10 +66,12 @@ model VerificationToken {
 }
 
 model Schema {
-    id       String    @id @default(uuid())
-    name     String
-    schema   String
-    template Template?
+    id          String    @id @default(uuid())
+    name        String
+    description String
+    isCustom    Boolean?  @default(false)
+    schema      String
+    template    Template?
 }
 
 model Template {
