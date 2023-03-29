@@ -1,6 +1,5 @@
 import { schemaRouter } from "./routers/schema";
 import { createTRPCRouter } from "~/server/api/trpc";
-import { exampleRouter } from "~/server/api/routers/example";
 import { templateRouter } from "./routers/template";
 
 /**
@@ -10,7 +9,6 @@ import { templateRouter } from "./routers/template";
  */
 export const appRouter = createTRPCRouter({
   scheme: schemaRouter,
-  example: exampleRouter,
   template: templateRouter,
 });
 
