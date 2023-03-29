@@ -16,12 +16,14 @@ import {
   Navigation,
   NavItemWrapper,
 } from "~/components/Layout/Navigation";
+import { TemplateForm } from "./TemplateForm";
 
 const loadInitialData = (data: RouterOutputs["scheme"]["getById"]) => {
   return { name: data?.name || "", description: data?.description || "" };
 };
 
 export const SchemaForm = ({ id }: { id?: string }) => {
+  const [open, setOpen] = useState(false);
   const [validate, setValidate] = useState(false);
   const router = useRouter();
   const { data, schema, isLoading, setSchema } = useSchemaContext();
@@ -30,29 +32,9 @@ export const SchemaForm = ({ id }: { id?: string }) => {
     description: string;
   }>(() => loadInitialData(data));
 
-  const { data: template, refetch } = api.template.getBySchemaId.useQuery({
+  const { data: template } = api.template.getBySchemaId.useQuery({
     schemaId: id || "",
   });
-
-  console.log({ name, description, template });
-
-  const { mutate: createTemplate, isLoading: isTemplateCreating } =
-    api.template.create.useMutation({
-      onSuccess: (data) => {
-        if (data) {
-          void refetch();
-          handleSaveOrUpdate();
-        }
-      },
-    });
-  const { mutate: updateTemplate, isLoading: isTemplateUpdating } =
-    api.template.update.useMutation({
-      onSuccess: (data) => {
-        if (data) {
-          handleSaveOrUpdate();
-        }
-      },
-    });
 
   const { mutate: createSchema } = api.scheme.create.useMutation({
     onSuccess: (data) => {
@@ -135,20 +117,23 @@ export const SchemaForm = ({ id }: { id?: string }) => {
               <NavItem
                 className="justify-end"
                 onClick={() => {
-                  if (template?.id) {
-                    updateTemplate({ id: template.id, name });
-                  } else {
-                    createTemplate({ name, isCustom: true, schemaId: id });
-                  }
+                  handleSaveOrUpdate();
+                  setOpen(true);
                 }}
               >
                 <CheckCircleIcon className="mr-1 h-6 w-6" />
-                Save as template
+                {template?.id ? "Edit Template" : "Save As Template"}
               </NavItem>
             </>
           )}
         </NavItemWrapper>
       </Navigation>
+      <TemplateForm
+        open={open}
+        setOpen={setOpen}
+        templateId={template?.id}
+        name={template?.name}
+      />
       {validate ? (
         <Validate schema={schema} />
       ) : (
