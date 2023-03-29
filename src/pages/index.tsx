@@ -5,6 +5,7 @@ import { generateSchema } from "~/utils/generateSchema";
 import { generateJSON_LD } from "~/utils/generateJSON_LD";
 
 type TemplateCardProps = {
+  id?: string;
   name: string;
   schema?: string;
   isCustom?: boolean;
@@ -84,10 +85,16 @@ const Home = () => {
 };
 
 const TemplateCard = ({ template }: { template: TemplateCardProps }) => {
-  const { name, description, schema, isCustom } = template;
+  const { name, description, schema, isCustom, id = "" } = template;
   const router = useRouter();
+  const utils = api.useContext();
 
   const { mutateAsync } = api.scheme.create.useMutation();
+  const { mutate: deleteSchema } = api.scheme.deleteSchema.useMutation({
+    onSuccess: () => {
+      void utils.scheme.getAll.invalidate();
+    },
+  });
 
   const handleCreateSchema = async () => {
     if (!schema) return;
@@ -116,7 +123,7 @@ const TemplateCard = ({ template }: { template: TemplateCardProps }) => {
         </button>
         {isCustom && (
           <button
-            onClick={() => void handleCreateSchema()}
+            onClick={() => void deleteSchema({ id })}
             className="mt-2 cursor-pointer self-start rounded-lg border border-red-400 bg-white py-2 px-6 text-red-400 hover:bg-red-400 hover:text-white hover:shadow-lg"
           >
             Delete
@@ -143,8 +150,8 @@ const UserTemplates = () => {
 
   return (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-      {userTemplates.map((template, key) => {
-        return <TemplateCard key={key} template={template} />;
+      {userTemplates.map((template) => {
+        return <TemplateCard key={template.id} template={template} />;
       })}
     </div>
   );
