@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { signIn, useSession } from "next-auth/react";
+import { signIn, useSession, signOut } from "next-auth/react";
 import {
   HomeIcon,
   Squares2X2Icon,
@@ -64,12 +64,12 @@ export const Head = () => {
                   Settings
                 </a>
                 <hr className="my-2" />
-                <a
-                  href="#"
-                  className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                <button
+                  onClick={() => void signOut()}
+                  className="block w-full px-4 py-2 text-left text-gray-800 hover:bg-gray-200"
                 >
                   Logout
-                </a>
+                </button>
               </div>
             </div>
           </NavItem>
