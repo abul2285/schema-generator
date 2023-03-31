@@ -45,10 +45,12 @@ model User {
     id            String    @id @default(cuid())
     name          String?
     email         String?   @unique
+    role          String?
     emailVerified DateTime?
     image         String?
     accounts      Account[]
     sessions      Session[]
+    Schema        Schema[]
 }
 
 model VerificationToken {
@@ -60,18 +62,12 @@ model VerificationToken {
 }
 
 model Schema {
-    id          String    @id @default(uuid())
-    name        String
-    description String
-    isCustom    Boolean?  @default(false)
-    schema      String
-    template    Template?
-}
-
-model Template {
-    id             String   @id @default(uuid())
-    name           String
-    isCustom       Boolean? @default(false)
-    schemaTemplate Schema   @relation(references: [id], fields: [schemaId])
-    schemaId       String   @unique
+    id           String   @id @default(uuid())
+    name         String
+    description  String
+    isCustom     Boolean? @default(false)
+    schema       String
+    templateName String?
+    creator      User     @relation(fields: [creatorId], references: [id])
+    creatorId    String
 }
