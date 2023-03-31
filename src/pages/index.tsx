@@ -1,8 +1,10 @@
 import { useRouter } from "next/router";
-import { type Field, type FieldType } from "~/types/schema.types";
+import { useSession } from "next-auth/react";
+
 import { api } from "~/utils/api";
 import { generateSchema } from "~/utils/generateSchema";
 import { generateJSON_LD } from "~/utils/generateJSON_LD";
+import { type Field, type FieldType } from "~/types/schema.types";
 
 type TemplateCardProps = {
   id?: string;
@@ -64,6 +66,8 @@ const templates: TemplateCardType = [
 ];
 
 const Home = () => {
+  const { status } = useSession();
+
   return (
     <main className="m-8">
       <section>
@@ -76,10 +80,12 @@ const Home = () => {
           })}
         </div>
       </section>
-      <section className="mt-10">
-        <h2 className="mb-4 text-2xl font-bold">Start Form Your Templates</h2>
-        <UserTemplates />
-      </section>
+      {status === "authenticated" && (
+        <section className="mt-10">
+          <h2 className="mb-4 text-2xl font-bold">Start Form Your Templates</h2>
+          <UserTemplates />
+        </section>
+      )}
     </main>
   );
 };
@@ -91,8 +97,10 @@ const TemplateCard = ({ template }: { template: TemplateCardProps }) => {
 
   const { mutateAsync } = api.scheme.create.useMutation();
   const { mutate: deleteSchema } = api.scheme.deleteSchema.useMutation({
-    onSuccess: () => {
-      void utils.scheme.getAll.invalidate();
+    onSuccess: (data) => {
+      if (data?.isCustom)
+        return void utils.scheme.getCurrentUserSchemas.invalidate();
+      void utils.scheme.getDefaultSchemas.invalidate();
     },
   });
 
@@ -135,7 +143,7 @@ const TemplateCard = ({ template }: { template: TemplateCardProps }) => {
 };
 
 const UserTemplates = () => {
-  const { data, isLoading } = api.scheme.getAll.useQuery();
+  const { data, isLoading } = api.scheme.getCurrentUserSchemas.useQuery();
 
   if (!data || isLoading) return <p>Loading...</p>;
 

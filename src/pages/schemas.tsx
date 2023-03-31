@@ -53,43 +53,29 @@ const Schemas = () => {
 };
 
 const DefaultSchema = () => {
-  const { data, isLoading } = api.template.getAll.useQuery({ isCustom: false });
+  const { data, isLoading } = api.scheme.getDefaultSchemas.useQuery();
 
   if (isLoading) return <p>Loading....</p>;
   if (!data) return <p>Default Template Not Found</p>;
   return (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-      {data.map((template) => (
-        <Card
-          key={template.id}
-          id={template.id}
-          name={template.name}
-          schemaId={template.schemaId}
-          isCustom={!!template.isCustom}
-          schema={template.schemaTemplate.schema}
-        />
+      {data.map((schema) => (
+        <Card key={schema.id} {...schema} />
       ))}
     </div>
   );
 };
 
 const UserDefinedSchema = () => {
-  const { data, isLoading } = api.template.getAll.useQuery({ isCustom: true });
+  const { data, isLoading } = api.scheme.getCurrentUserSchemas.useQuery();
 
   if (isLoading) return <p>Loading....</p>;
   if (!data) return <p>Default Template Not Found</p>;
 
   return (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-      {data.map((template) => (
-        <Card
-          id={template.id}
-          key={template.id}
-          name={template.name}
-          schemaId={template.schemaId}
-          isCustom={!!template.isCustom}
-          schema={template.schemaTemplate.schema}
-        />
+      {data.map((schema) => (
+        <Card key={schema.id} {...schema} />
       ))}
     </div>
   );

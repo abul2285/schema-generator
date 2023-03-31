@@ -32,16 +32,14 @@ export const SchemaForm = ({ id }: { id?: string }) => {
     description: string;
   }>(() => loadInitialData(data));
 
-  const { data: template } = api.template.getBySchemaId.useQuery({
-    schemaId: id || "",
-  });
-
   const { mutate: createSchema } = api.scheme.create.useMutation({
     onSuccess: (data) => {
       if (!data) return;
       void router.push(`/schema/${data.id}`);
     },
   });
+
+  console.log({ data });
 
   const { mutate: updateSchema } = api.scheme.updateSchema.useMutation();
 
@@ -117,12 +115,11 @@ export const SchemaForm = ({ id }: { id?: string }) => {
               <NavItem
                 className="justify-end"
                 onClick={() => {
-                  handleSaveOrUpdate();
                   setOpen(true);
                 }}
               >
                 <CheckCircleIcon className="mr-1 h-6 w-6" />
-                {template?.id ? "Edit Template" : "Save As Template"}
+                {data?.templateName ? "Edit Template" : "Save As Template"}
               </NavItem>
             </>
           )}
@@ -131,8 +128,7 @@ export const SchemaForm = ({ id }: { id?: string }) => {
       <TemplateForm
         open={open}
         setOpen={setOpen}
-        templateId={template?.id}
-        name={template?.name}
+        templateName={data?.templateName || ""}
       />
       {validate ? (
         <Validate schema={schema} />

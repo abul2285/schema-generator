@@ -4,7 +4,7 @@ import { TemplateForm } from "~/components/Form";
 import { type Field } from "~/types/schema.types";
 import { generateSchema } from "~/utils/generateSchema";
 
-const Home = () => {
+const JSONToSchema = () => {
   const ref = useRef<HTMLTextAreaElement | null>(null);
   const [open, setOpen] = useState(false);
   const [schema, setSchema] = useState("");
@@ -41,4 +41,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default JSONToSchema;
