@@ -51,18 +51,18 @@ export const Head = () => {
                 <ChevronDownIcon className="h-5 w-5" />
               </button>
               <div className="absolute right-0 z-10 mt-4 hidden w-48 rounded-lg bg-white shadow-lg group-hover/avatar:block">
-                <a
-                  href="#"
+                <Link
+                  href="/profile"
                   className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
                 >
                   Profile
-                </a>
-                <a
-                  href="#"
+                </Link>
+                <Link
+                  href="/settings"
                   className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
                 >
                   Settings
-                </a>
+                </Link>
                 <hr className="my-2" />
                 <button
                   onClick={() => void signOut()}
