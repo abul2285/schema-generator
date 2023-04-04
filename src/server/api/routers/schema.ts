@@ -64,27 +64,49 @@ export const schemaRouter = createTRPCRouter({
         console.log(error);
       }
     }),
-  getCurrentUserSchemas: protectedProcedure.query(async ({ ctx }) => {
-    try {
-      const { prisma, session } = ctx;
-      const { id: creatorId } = session.user;
-      return await prisma.schema.findMany({
-        where: { creatorId },
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  }),
-  getDefaultSchemas: publicProcedure.query(async ({ ctx }) => {
-    try {
-      const { prisma } = ctx;
-      return await prisma.schema.findMany({
-        where: { isCustom: false },
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  }),
+  getCurrentUserSchemas: protectedProcedure
+    .input(
+      z
+        .object({
+          templateOnly: z.boolean().optional(),
+          schemaOnly: z.boolean().optional(),
+        })
+        .optional()
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const { prisma, session } = ctx;
+        const { id: creatorId } = session.user;
+        const filter: { templateName?: { not?: null; equals?: null } } = {};
+        if (input?.templateOnly) {
+          filter.templateName = { not: null };
+        }
+        if (input?.schemaOnly) {
+          filter.templateName = { equals: null };
+        }
+        return await prisma.schema.findMany({
+          where: { creatorId, ...filter },
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    }),
+  getDefaultSchemas: publicProcedure
+    .input(z.object({ templateOnly: z.boolean().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      try {
+        const { prisma } = ctx;
+        const filter: { templateName?: { not: null } } = {};
+        if (input?.templateOnly) {
+          filter.templateName = { not: null };
+        }
+        return await prisma.schema.findMany({
+          where: { isCustom: false },
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    }),
   getById: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
