@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { toast } from "react-hot-toast";
 import {
   EyeIcon,
   TrashIcon,
@@ -19,6 +20,7 @@ export const Card = (template: RouterOutputs["scheme"]["getById"]) => {
       onSuccess: (data) => {
         if (data) {
           const { isCustom } = data;
+          toast.success("Deleted successfully");
           if (isCustom) void utils.scheme.getCurrentUserSchemas.invalidate();
           else void utils.scheme.getDefaultSchemas.invalidate();
         }
@@ -29,6 +31,7 @@ export const Card = (template: RouterOutputs["scheme"]["getById"]) => {
     api.scheme.create.useMutation({
       onSuccess: (data) => {
         if (data) {
+          toast.success("Duplicated successfully");
           void utils.scheme.getCurrentUserSchemas.invalidate();
         }
       },
@@ -53,8 +56,6 @@ export const Card = (template: RouterOutputs["scheme"]["getById"]) => {
       void router.push(`/schema/${data.id}`);
     }
   };
-
-  console.log({ template });
 
   if (!template) return null;
 

@@ -7,6 +7,9 @@ import {
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 
+import { CreateNew } from "../Card";
+import { Loading } from "../Loading";
+import { toast } from "react-hot-toast";
 import { useSchemaContext } from "~/contexts";
 import { Validate } from "~/components/Validate";
 import { api, type RouterOutputs } from "~/utils/api";
@@ -32,16 +35,32 @@ export const SchemaForm = ({ id }: { id?: string }) => {
     description: string;
   }>(() => loadInitialData(data));
 
-  const { mutate: createSchema } = api.scheme.create.useMutation({
-    onSuccess: (data) => {
-      if (!data) return;
-      void router.push(`/schema/${data.id}`);
-    },
-  });
+  const { mutate: createSchema, isLoading: isCreating } =
+    api.scheme.create.useMutation({
+      onSuccess: (data) => {
+        if (!data) return;
+        const name = data?.templateName || data?.name || "";
+        toast.success(`${name} created successfully`);
+        void router.push(`/schema/${data.id}`);
+      },
+    });
 
-  console.log({ data });
+  const { mutate: updateSchema, isLoading: isUpdating } =
+    api.scheme.updateSchema.useMutation({
+      onSuccess: (data) => {
+        const name = data?.templateName || data?.name || "";
+        toast.success(`${name} updated successfully`);
+      },
+    });
 
-  const { mutate: updateSchema } = api.scheme.updateSchema.useMutation();
+  const { mutate: deleteSchema, isLoading: isDeleting } =
+    api.scheme.deleteSchema.useMutation({
+      onSuccess: (data) => {
+        const name = data?.templateName || data?.name || "";
+        toast.success(`${name} deleted successfully`);
+        void router.push("/templates");
+      },
+    });
 
   const handleAddProperty = () => {
     const payload = [...schema, { name: "", value: "" }];
@@ -86,6 +105,12 @@ export const SchemaForm = ({ id }: { id?: string }) => {
   }, [data, id]);
 
   if (isLoading) return <p>loading...</p>;
+  if (id && !data)
+    return (
+      <div className="mt-24">
+        <CreateNew title="No Schema Found" />;
+      </div>
+    );
 
   return (
     <>
@@ -102,13 +127,28 @@ export const SchemaForm = ({ id }: { id?: string }) => {
           </NavItem>
 
           <NavItem className="justify-end" onClick={handleSaveOrUpdate}>
-            <CheckCircleIcon className="mr-1 h-6 w-6" />
+            {isCreating || isUpdating ? (
+              <Loading />
+            ) : (
+              <CheckCircleIcon className="mr-1 h-6 w-6" />
+            )}
             Save
           </NavItem>
-          <NavItem hoverAble className="hover:border-b-transparent">
-            <TrashIcon className="mr-1 h-6 w-6" />
-            Delete
-          </NavItem>
+          {id && (
+            <NavItem
+              hoverAble
+              className="hover:border-b-transparent"
+              onClick={() => deleteSchema({ id })}
+            >
+              {isDeleting && <Loading />}
+              <TrashIcon
+                className="mt-0 mr-1 h-6 w-6"
+                style={{ marginTop: 0 }}
+              />
+              Delete
+            </NavItem>
+          )}
+
           {id && (
             <>
               <div className="flex-1" />

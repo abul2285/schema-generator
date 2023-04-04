@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 
 import { Modal } from "../Modal";
 import { api } from "~/utils/api";
+import { Loading } from "../Loading";
 import { useRouter } from "next/router";
 
 export const TemplateForm = ({
@@ -33,19 +35,25 @@ export const TemplateForm = ({
     setOpen(false);
   };
 
-  const { mutate: createSchema } = api.scheme.create.useMutation({
-    onSuccess: () => {
-      if (schema) {
+  const { mutate: createSchema, isLoading: isCreating } =
+    api.scheme.create.useMutation({
+      onSuccess: (data) => {
+        const name = data?.templateName || data?.name || "";
+        toast.success(`${name} has created successfully`);
+        if (schema) {
+          setOpen(false);
+          void router.push(`/templates?type=default`);
+        }
+      },
+    });
+  const { mutate: updateSchema, isLoading: isUpdating } =
+    api.scheme.updateSchema.useMutation({
+      onSuccess: (data) => {
+        const name = data?.templateName || data?.name || "";
+        toast.success(`${name} has updated successfully`);
         setOpen(false);
-        void router.push(`/templates?type=default`);
-      }
-    },
-  });
-  const { mutate: updateSchema } = api.scheme.updateSchema.useMutation({
-    onSuccess: () => {
-      setOpen(false);
-    },
-  });
+      },
+    });
   const handleSave = (event: React.MouseEvent<HTMLElement>) => {
     event.preventDefault();
     try {
@@ -105,6 +113,7 @@ export const TemplateForm = ({
             onClick={handleSave}
             className="mr-1 rounded-lg border bg-sky-400 py-1 px-4 text-white"
           >
+            {(isCreating || isUpdating) && <Loading />}
             Save
           </button>
           <button
