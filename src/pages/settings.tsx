@@ -4,9 +4,13 @@ import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { CameraIcon } from "@heroicons/react/24/outline";
 
+import { api } from "~/utils/api";
+
 const Settings = () => {
-  const { data: session, status } = useSession();
   const router = useRouter();
+  const { data: session, status } = useSession();
+
+  const { mutate, isLoading } = api.user.update.useMutation();
 
   const { name, email, image, role } = session?.user || {};
 
@@ -27,7 +31,13 @@ const Settings = () => {
             Update your account information.
           </p>
         </div>
-        <div className="border-t border-gray-200">
+        <form
+          className="border-t border-gray-200"
+          onSubmit={(e) => {
+            e.preventDefault();
+            console.log("submit");
+          }}
+        >
           <dl>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="text-sm font-medium text-gray-500">Name</dt>
@@ -93,8 +103,16 @@ const Settings = () => {
                 </select>
               </dd>
             </div>
+            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-500"></dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                <button className="cursor-pointer self-start rounded-lg border bg-sky-400 py-2 px-6 text-white hover:shadow-lg">
+                  Update
+                </button>
+              </dd>
+            </div>
           </dl>
-        </div>
+        </form>
       </div>
     </div>
   );
