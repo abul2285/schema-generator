@@ -5,7 +5,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 import { api } from "~/utils/api";
-import { Card } from "~/components/Card";
+import { Card, CreateNew } from "~/components/Card";
 import {
   NavItem,
   Navigation,
@@ -13,7 +13,7 @@ import {
 } from "~/components/Layout/Navigation";
 import { useRouter } from "next/router";
 
-const Schemas = () => {
+const Templates = () => {
   const { query, push } = useRouter();
   const { type } = query;
 
@@ -26,7 +26,7 @@ const Schemas = () => {
             onClick={() => void push({ query: { type: "default" } })}
           >
             <BarsArrowUpIcon className="mr-2 h-6 w-6" />
-            Default Schemas
+            Default Templates
           </NavItem>
 
           <NavItem
@@ -34,7 +34,7 @@ const Schemas = () => {
             onClick={() => void push({ query: { type: "custom" } })}
           >
             <BarsArrowDownIcon className="mr-2 h-6 w-6" />
-            Your Schemas
+            Your Templates
           </NavItem>
           <div className="flex-1" />
           <Link href="/schema/create-new">
@@ -67,10 +67,12 @@ const DefaultSchema = () => {
 };
 
 const UserDefinedSchema = () => {
-  const { data, isLoading } = api.scheme.getCurrentUserSchemas.useQuery();
+  const { data, isLoading } = api.scheme.getCurrentUserSchemas.useQuery({
+    templateOnly: true,
+  });
 
   if (isLoading) return <p>Loading....</p>;
-  if (!data) return <p>Default Template Not Found</p>;
+  if (!data?.length) return <CreateNew title="No Template Found" />;
 
   return (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -81,4 +83,4 @@ const UserDefinedSchema = () => {
   );
 };
 
-export default Schemas;
+export default Templates;

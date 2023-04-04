@@ -22,10 +22,10 @@ export const Head = () => {
             <HomeIcon className="mr-1 h-6 w-6" />
           </NavItem>
         </Link>
-        <Link href="/schemas">
+        <Link href="/templates">
           <NavItem hoverAble>
             <Squares2X2Icon className="mr-2 h-6 w-6" />
-            Schemas
+            Templates
           </NavItem>
         </Link>
         <Link href="/schema/jsonld-to-schema">

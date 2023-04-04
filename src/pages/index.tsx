@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 
 import { api } from "~/utils/api";
+import { CreateNew } from "~/components/Card";
 import { generateSchema } from "~/utils/generateSchema";
 import { generateJSON_LD } from "~/utils/generateJSON_LD";
 import { type Field, type FieldType } from "~/types/schema.types";
@@ -143,9 +144,13 @@ const TemplateCard = ({ template }: { template: TemplateCardProps }) => {
 };
 
 const UserTemplates = () => {
-  const { data, isLoading } = api.scheme.getCurrentUserSchemas.useQuery();
+  const { data, isLoading } = api.scheme.getCurrentUserSchemas.useQuery({
+    schemaOnly: true,
+  });
 
-  if (!data || isLoading) return <p>Loading...</p>;
+  if (isLoading) return <p>Loading...</p>;
+
+  if (!data?.length) return <CreateNew title="No Schema Found" />;
 
   const userTemplates = data.map((template) => {
     const schema = generateJSON_LD(JSON.parse(template.schema) as FieldType[]);

@@ -37,7 +37,7 @@ export const TemplateForm = ({
     onSuccess: () => {
       if (schema) {
         setOpen(false);
-        void router.push(`/schemas?type=default`);
+        void router.push(`/templates?type=default`);
       }
     },
   });
