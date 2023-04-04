@@ -1,5 +1,6 @@
 import { type AppType } from "next/app";
 import { type Session } from "next-auth";
+import { Toaster } from "react-hot-toast";
 import { SessionProvider } from "next-auth/react";
 
 import { api } from "~/utils/api";
@@ -14,6 +15,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   return (
     <SessionProvider session={session}>
+      <Toaster position="bottom-center" />
       <SchemaProvider>
         <Head />
         <Component {...pageProps} />
