@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 
 import { api } from "~/utils/api";
 import { Loading } from "~/components/Loading";
-import type { RouterOutputs } from "~/utils/api";
+import type { Schema } from "~/types/schema.types";
 
 const Profile = () => {
   const router = useRouter();
@@ -114,11 +114,6 @@ const Profile = () => {
     </>
   );
 };
-
-type Schema = Exclude<
-  RouterOutputs["scheme"]["getCurrentUserSchemas"],
-  undefined
->[number];
 
 const TableRow = ({
   schema,

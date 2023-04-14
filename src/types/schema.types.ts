@@ -1,3 +1,5 @@
+import type { RouterOutputs } from "~/utils/api";
+
 export type FieldType = {
   name: string;
   value?: string;
@@ -12,3 +14,8 @@ export enum SchemaFieldType {
 export type Field = {
   [key: string]: string | Field | (Field | string)[];
 };
+
+export type Schema = Exclude<
+  RouterOutputs["scheme"]["getCurrentUserSchemas"],
+  undefined
+>[number];
