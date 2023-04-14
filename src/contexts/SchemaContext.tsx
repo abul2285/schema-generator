@@ -6,13 +6,16 @@ import {
   createContext,
   type ReactNode,
 } from "react";
+import { useSession } from "next-auth/react";
 
 import { api } from "~/utils/api";
 import { getTargetItems } from "~/utils/schema";
-import { SchemaFieldType, type FieldType } from "~/types/schema.types";
-import {
-  type SchemaChangeType,
-  type SchemaContextValueType,
+import { SchemaFieldType } from "~/types/schema.types";
+import { generateSchema } from "~/utils/generateSchema";
+import type { FieldType, Schema, Field } from "~/types/schema.types";
+import type {
+  SchemaChangeType,
+  SchemaContextValueType,
 } from "~/types/context.types";
 
 const SchemaContext = createContext<SchemaContextValueType>(
@@ -23,6 +26,7 @@ const Provider = SchemaContext.Provider;
 export const SchemaProvider = ({ children }: { children: ReactNode }) => {
   const [schema, setSchema] = useState<FieldType[]>([]);
   const router = useRouter();
+  const { status } = useSession();
   const { schemaId } = router.query;
   const id = schemaId ? String(schemaId) : "";
   const { data, isLoading } = api.scheme.getById.useQuery(
@@ -31,6 +35,8 @@ export const SchemaProvider = ({ children }: { children: ReactNode }) => {
       enabled: !!id,
     }
   );
+
+  const isAuth = status === "authenticated";
 
   const handleAdd = (address: string, type: SchemaFieldType) => {
     const clonedSchema = JSON.parse(JSON.stringify(schema)) as FieldType[];
@@ -87,6 +93,17 @@ export const SchemaProvider = ({ children }: { children: ReactNode }) => {
     const schema = (data ? JSON.parse(data.schema) : []) as FieldType[];
     setSchema(schema);
   }, [data]);
+
+  useEffect(() => {
+    if (!isAuth) {
+      const template = localStorage.getItem("template");
+      if (!template) return;
+
+      const schema = JSON.parse(template) as Schema;
+      const jsonLD = JSON.parse(schema.schema) as Field;
+      setSchema(generateSchema(jsonLD));
+    }
+  }, [isAuth]);
 
   return (
     <Provider

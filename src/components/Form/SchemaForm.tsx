@@ -1,4 +1,6 @@
 import { useRouter } from "next/router";
+import { toast } from "react-hot-toast";
+import { useSession } from "next-auth/react";
 import { type ChangeEvent, useState, useEffect } from "react";
 import {
   TrashIcon,
@@ -9,8 +11,8 @@ import {
 
 import { CreateNew } from "../Card";
 import { Loading } from "../Loading";
-import { toast } from "react-hot-toast";
 import { useSchemaContext } from "~/contexts";
+import { TemplateForm } from "./TemplateForm";
 import { Validate } from "~/components/Validate";
 import { api, type RouterOutputs } from "~/utils/api";
 import { RenderSchemaFields } from "~/components/RenderSchemaField";
@@ -19,10 +21,6 @@ import {
   Navigation,
   NavItemWrapper,
 } from "~/components/Layout/Navigation";
-import { TemplateForm } from "./TemplateForm";
-import { useSession } from "next-auth/react";
-import { generateSchema } from "~/utils/generateSchema";
-import type { Field, FieldType, Schema } from "~/types/schema.types";
 
 const loadInitialData = (data: RouterOutputs["scheme"]["getById"]) => {
   return { name: data?.name || "", description: data?.description || "" };
@@ -38,7 +36,6 @@ export const SchemaForm = ({ id }: { id?: string }) => {
     name: string;
     description: string;
   }>(() => loadInitialData(data));
-  const [localSchema, setLocalSchema] = useState<FieldType[]>();
 
   const isAuth = status === "authenticated";
 
@@ -111,18 +108,6 @@ export const SchemaForm = ({ id }: { id?: string }) => {
     setSchemaDetails(loadInitialData(data));
   }, [data, id]);
 
-  useEffect(() => {
-    if (!isAuth) {
-      const template = localStorage.getItem("template");
-      if (!template) return;
-
-      const schema = JSON.parse(template) as Schema;
-      const jsonLD = JSON.parse(schema.schema) as Field;
-      setLocalSchema(generateSchema(jsonLD));
-      setSchemaDetails({ name: schema.name, description: schema.description });
-    }
-  }, [isAuth]);
-
   if (isLoading && id) return <p>loading...</p>;
   if (id && !data)
     return (
@@ -130,8 +115,6 @@ export const SchemaForm = ({ id }: { id?: string }) => {
         <CreateNew title="No Schema Found" />;
       </div>
     );
-
-  const fields = isAuth ? schema : localSchema;
 
   return (
     <>
@@ -195,7 +178,7 @@ export const SchemaForm = ({ id }: { id?: string }) => {
         templateName={data?.templateName || ""}
       />
       {validate ? (
-        <Validate schema={fields || []} />
+        <Validate schema={schema || []} />
       ) : (
         <main className="p-4">
           <div className="mb-2 flex items-center justify-between gap-3">
@@ -225,7 +208,7 @@ export const SchemaForm = ({ id }: { id?: string }) => {
               </button>
             </div>
           </div>
-          <RenderSchemaFields fields={fields || []} />
+          <RenderSchemaFields fields={schema || []} />
           <textarea
             value={description}
             name="description"
