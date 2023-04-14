@@ -118,11 +118,14 @@ const TemplateCard = ({
   });
 
   const handleCreateSchema = async () => {
+    if (!schema)
+      return alert(
+        "Sorry for the interruption. Currently, only the Article template is ready. Others will be added soon"
+      );
     if (!isAuth) {
       localStorage.setItem("template", JSON.stringify(template));
       return router.push("/schema/create-new");
     }
-    if (!schema) return;
     const jsonLD = JSON.parse(schema) as Field;
     const generatedSchema = generateSchema(jsonLD);
     const data = await mutateAsync({
