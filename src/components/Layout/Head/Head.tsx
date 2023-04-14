@@ -7,6 +7,7 @@ import {
   CommandLineIcon,
   ChevronDownIcon,
   ArrowRightOnRectangleIcon,
+  Bars4Icon,
 } from "@heroicons/react/24/outline";
 
 import { Navigation, NavItem, NavItemWrapper } from "../Navigation";
@@ -22,13 +23,42 @@ export const Head = () => {
             <HomeIcon className="mr-1 h-6 w-6" />
           </NavItem>
         </Link>
-        <Link href="/templates">
+
+        <div className="group/menu flex cursor-pointer space-y-4 py-4 md:hidden">
+          <div className="relative">
+            <button className="flex items-center text-gray-700 hover:text-gray-900">
+              <Bars4Icon className="h-6 w-6" />
+            </button>
+            <div className="absolute z-10 mt-5 hidden w-48 rounded-lg bg-white shadow-lg group-hover/menu:block">
+              <Link
+                href="/templates"
+                className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+              >
+                <NavItem>
+                  <Squares2X2Icon className="mr-2 h-6 w-6" />
+                  Templates
+                </NavItem>
+              </Link>
+              <Link
+                href="/schema/jsonld-to-schema"
+                className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+              >
+                <NavItem>
+                  <CommandLineIcon className="mr-2 h-6 w-6" />
+                  JSON-LD to Schema
+                </NavItem>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <Link href="/templates" className="hidden md:block">
           <NavItem hoverAble>
             <Squares2X2Icon className="mr-2 h-6 w-6" />
             Templates
           </NavItem>
         </Link>
-        <Link href="/schema/jsonld-to-schema">
+        <Link href="/schema/jsonld-to-schema" className="hidden md:block">
           <NavItem hoverAble>
             <CommandLineIcon className="mr-2 h-6 w-6" />
             JSON-LD to Schema
