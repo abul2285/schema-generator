@@ -1,4 +1,5 @@
 import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
 
 import { api } from "~/utils/api";
 import Board from "~/components/Board/Board";
@@ -9,8 +10,10 @@ import {
   Navigation,
   NavItemWrapper,
 } from "~/components/Layout/Navigation";
+import { useRedirect } from "~/hooks";
 
 const SchemaTemplate = () => {
+  const { status } = useSession();
   const { schemaId } = useRouter().query;
   const { data, isLoading } = api.scheme.getById.useQuery(
     { id: schemaId as string },
@@ -18,6 +21,10 @@ const SchemaTemplate = () => {
       enabled: !!schemaId,
     }
   );
+
+  useRedirect({ isAuth: status === "authenticated" });
+
+  if (status === "unauthenticated") return null;
 
   if (isLoading || !data) return <p>Loading...</p>;
   const jsonLD = generateJSON_LD(JSON.parse(data.schema) as FieldType[]);

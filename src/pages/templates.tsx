@@ -12,9 +12,11 @@ import {
   NavItemWrapper,
 } from "~/components/Layout/Navigation";
 import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
 
 const Templates = () => {
   const { query, push } = useRouter();
+  const { status } = useSession();
   const { type } = query;
 
   return (
@@ -28,14 +30,16 @@ const Templates = () => {
             <BarsArrowUpIcon className="mr-2 h-6 w-6" />
             Default Templates
           </NavItem>
+          {status === "authenticated" && (
+            <NavItem
+              hoverAble
+              onClick={() => void push({ query: { type: "custom" } })}
+            >
+              <BarsArrowDownIcon className="mr-2 h-6 w-6" />
+              Your Templates
+            </NavItem>
+          )}
 
-          <NavItem
-            hoverAble
-            onClick={() => void push({ query: { type: "custom" } })}
-          >
-            <BarsArrowDownIcon className="mr-2 h-6 w-6" />
-            Your Templates
-          </NavItem>
           <div className="flex-1" />
           <Link href="/schema/create-new">
             <NavItem hoverAble>

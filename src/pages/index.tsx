@@ -77,7 +77,13 @@ const Home = () => {
         </h2>
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           {templates.map((template, key) => {
-            return <TemplateCard key={key} template={template} />;
+            return (
+              <TemplateCard
+                key={key}
+                template={template}
+                isAuth={status === "authenticated"}
+              />
+            );
           })}
         </div>
       </section>
@@ -91,7 +97,13 @@ const Home = () => {
   );
 };
 
-const TemplateCard = ({ template }: { template: TemplateCardProps }) => {
+const TemplateCard = ({
+  isAuth,
+  template,
+}: {
+  template: TemplateCardProps;
+  isAuth: boolean;
+}) => {
   const { name, description, schema, isCustom, id = "" } = template;
   const router = useRouter();
   const utils = api.useContext();
@@ -106,6 +118,10 @@ const TemplateCard = ({ template }: { template: TemplateCardProps }) => {
   });
 
   const handleCreateSchema = async () => {
+    if (!isAuth) {
+      localStorage.setItem("template", JSON.stringify(template));
+      return router.push("/schema/create-new");
+    }
     if (!schema) return;
     const jsonLD = JSON.parse(schema) as Field;
     const generatedSchema = generateSchema(jsonLD);
@@ -164,7 +180,7 @@ const UserTemplates = () => {
   return (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
       {userTemplates.map((template) => {
-        return <TemplateCard key={template.id} template={template} />;
+        return <TemplateCard isAuth key={template.id} template={template} />;
       })}
     </div>
   );
