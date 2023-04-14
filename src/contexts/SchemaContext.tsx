@@ -25,7 +25,12 @@ export const SchemaProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const { schemaId } = router.query;
   const id = schemaId ? String(schemaId) : "";
-  const { data, isLoading } = api.scheme.getById.useQuery({ id });
+  const { data, isLoading } = api.scheme.getById.useQuery(
+    { id },
+    {
+      enabled: !!id,
+    }
+  );
 
   const handleAdd = (address: string, type: SchemaFieldType) => {
     const clonedSchema = JSON.parse(JSON.stringify(schema)) as FieldType[];

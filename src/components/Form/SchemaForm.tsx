@@ -20,12 +20,16 @@ import {
   NavItemWrapper,
 } from "~/components/Layout/Navigation";
 import { TemplateForm } from "./TemplateForm";
+import { useSession } from "next-auth/react";
+import { generateSchema } from "~/utils/generateSchema";
+import type { Field, FieldType, Schema } from "~/types/schema.types";
 
 const loadInitialData = (data: RouterOutputs["scheme"]["getById"]) => {
   return { name: data?.name || "", description: data?.description || "" };
 };
 
 export const SchemaForm = ({ id }: { id?: string }) => {
+  const { status } = useSession();
   const [open, setOpen] = useState(false);
   const [validate, setValidate] = useState(false);
   const router = useRouter();
@@ -34,6 +38,9 @@ export const SchemaForm = ({ id }: { id?: string }) => {
     name: string;
     description: string;
   }>(() => loadInitialData(data));
+  const [localSchema, setLocalSchema] = useState<FieldType[]>();
+
+  const isAuth = status === "authenticated";
 
   const { mutate: createSchema, isLoading: isCreating } =
     api.scheme.create.useMutation({
@@ -104,13 +111,27 @@ export const SchemaForm = ({ id }: { id?: string }) => {
     setSchemaDetails(loadInitialData(data));
   }, [data, id]);
 
-  if (isLoading) return <p>loading...</p>;
+  useEffect(() => {
+    if (!isAuth) {
+      const template = localStorage.getItem("template");
+      if (!template) return;
+
+      const schema = JSON.parse(template) as Schema;
+      const jsonLD = JSON.parse(schema.schema) as Field;
+      setLocalSchema(generateSchema(jsonLD));
+      setSchemaDetails({ name: schema.name, description: schema.description });
+    }
+  }, [isAuth]);
+
+  if (isLoading && id) return <p>loading...</p>;
   if (id && !data)
     return (
       <div className="mt-24">
         <CreateNew title="No Schema Found" />;
       </div>
     );
+
+  const fields = isAuth ? schema : localSchema;
 
   return (
     <>
@@ -126,14 +147,17 @@ export const SchemaForm = ({ id }: { id?: string }) => {
             Validate Schema
           </NavItem>
 
-          <NavItem className="justify-end" onClick={handleSaveOrUpdate}>
-            {isCreating || isUpdating ? (
-              <Loading />
-            ) : (
-              <CheckCircleIcon className="mr-1 h-6 w-6" />
-            )}
-            Save
-          </NavItem>
+          {isAuth && (
+            <NavItem className="justify-end" onClick={handleSaveOrUpdate}>
+              {isCreating || isUpdating ? (
+                <Loading />
+              ) : (
+                <CheckCircleIcon className="mr-1 h-6 w-6" />
+              )}
+              Save
+            </NavItem>
+          )}
+
           {id && (
             <NavItem
               hoverAble
@@ -171,7 +195,7 @@ export const SchemaForm = ({ id }: { id?: string }) => {
         templateName={data?.templateName || ""}
       />
       {validate ? (
-        <Validate schema={schema} />
+        <Validate schema={fields || []} />
       ) : (
         <main className="p-4">
           <div className="mb-2 flex items-center justify-between gap-3">
@@ -201,7 +225,7 @@ export const SchemaForm = ({ id }: { id?: string }) => {
               </button>
             </div>
           </div>
-          <RenderSchemaFields fields={schema || []} />
+          <RenderSchemaFields fields={fields || []} />
           <textarea
             value={description}
             name="description"
