@@ -7,7 +7,6 @@ export const userRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         name: z.string(),
-        role: z.string(),
         email: z.string(),
         image: z.string(),
       })
