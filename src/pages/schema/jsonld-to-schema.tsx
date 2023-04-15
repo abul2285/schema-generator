@@ -1,40 +1,83 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { toast } from "react-hot-toast";
+import Editor from "@monaco-editor/react";
+import type { OnValidate } from "@monaco-editor/react";
 
 import { TemplateForm } from "~/components/Form";
 import { type Field } from "~/types/schema.types";
 import { generateSchema } from "~/utils/generateSchema";
+import { WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
+import {
+  NavItem,
+  Navigation,
+  NavItemWrapper,
+} from "~/components/Layout/Navigation";
 
 const JSONToSchema = () => {
-  const ref = useRef<HTMLTextAreaElement | null>(null);
   const [open, setOpen] = useState(false);
   const [schema, setSchema] = useState("");
+  const [markers, setMarkers] = useState<Parameters<OnValidate>[number]>([]);
+
+  const handleEditorChange = (value?: string) => {
+    if (!value) return;
+    const jsonLD = JSON.parse(value) as Field;
+    const generatedSchema = generateSchema(jsonLD);
+    setSchema(JSON.stringify(generatedSchema));
+  };
+
+  function handleEditorValidation(markers: Parameters<OnValidate>[number]) {
+    setMarkers(markers);
+  }
+
+  const hasError = () => {
+    const hasError = markers.length || !schema;
+
+    let errorMessage =
+      markers.length &&
+      markers
+        .map(
+          (marker: { message: string; endLineNumber: number }) =>
+            `${marker.message} at line ${marker.endLineNumber}`
+        )
+        .join(",");
+
+    if (!schema) {
+      errorMessage = "Please write something to the editor";
+    }
+
+    if (errorMessage) toast.error(errorMessage);
+
+    return hasError;
+  };
 
   const handleOpenModal = () => {
-    try {
-      if (!ref.current?.value) throw new Error("Field is required");
-      const { value } = ref.current;
-      const jsonLD = JSON.parse(value) as Field;
-      const generatedSchema = generateSchema(jsonLD);
-      setSchema(JSON.stringify(generatedSchema));
-      setOpen(true);
-    } catch (error) {
-      alert(error);
-    }
+    if (hasError()) return;
+    setOpen(true);
   };
 
   return (
     <>
-      <main className="fixed top-0 left-0 right-0 bottom-0 -z-10 flex h-screen flex-col items-center justify-center bg-slate-600">
-        <textarea
-          ref={ref}
-          className="mt-4 h-3/4 w-4/5 rounded-md border p-4 leading-8 tracking-wider text-sky-600 shadow-lg"
+      <Navigation submenu>
+        <NavItemWrapper>
+          {/* <NavItem onClick={handleSaveAsSchema}>
+            <WrenchIcon className="mr-1 h-6 w-6" />
+            Save as schema
+          </NavItem> */}
+          <NavItem onClick={handleOpenModal}>
+            <WrenchScrewdriverIcon className="mr-1 h-6 w-6" />
+            Save As Template
+          </NavItem>
+        </NavItemWrapper>
+      </Navigation>
+      <main className="flex h-screen flex-col items-center justify-center bg-slate-600">
+        <Editor
+          theme="vs-dark"
+          defaultValue=""
+          defaultLanguage="json"
+          className="h-5/6 w-4/5 p-10"
+          onChange={handleEditorChange}
+          onValidate={handleEditorValidation}
         />
-        <button
-          className="peer mt-2 w-1/3 self-center rounded-lg border bg-sky-400 py-2 px-6 text-white"
-          onClick={handleOpenModal}
-        >
-          Create Template From JSON-LD
-        </button>
         <TemplateForm open={open} schema={schema} setOpen={setOpen} />
       </main>
     </>
