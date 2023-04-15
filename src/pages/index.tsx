@@ -5,7 +5,7 @@ import { api } from "~/utils/api";
 import { CreateNew } from "~/components/Card";
 import { generateSchema } from "~/utils/generateSchema";
 import { generateJSON_LD } from "~/utils/generateJSON_LD";
-import { type Field, type FieldType } from "~/types/schema.types";
+import type { Schema, Field, FieldType } from "~/types/schema.types";
 
 type TemplateCardProps = {
   id?: string;
@@ -171,7 +171,7 @@ const UserTemplates = () => {
 
   if (!data?.length) return <CreateNew title="No Schema Found" />;
 
-  const userTemplates = data.map((template) => {
+  const userTemplates = data.map((template: Schema) => {
     const schema = generateJSON_LD(JSON.parse(template.schema) as FieldType[]);
     return {
       ...template,
