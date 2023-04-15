@@ -50,7 +50,7 @@ const Templates = () => {
           </Link>
         </NavItemWrapper>
       </Navigation>
-      <main className="m-4">
+      <main className="m-8">
         {type === "custom" ? <UserDefinedSchema /> : <DefaultSchema />}
       </main>
     </>
