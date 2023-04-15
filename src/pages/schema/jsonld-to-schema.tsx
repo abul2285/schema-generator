@@ -3,6 +3,7 @@ import { toast } from "react-hot-toast";
 import Editor from "@monaco-editor/react";
 import type { OnValidate } from "@monaco-editor/react";
 
+import { useRedirect } from "~/hooks";
 import { TemplateForm } from "~/components/Form";
 import { type Field } from "~/types/schema.types";
 import { generateSchema } from "~/utils/generateSchema";
@@ -12,11 +13,15 @@ import {
   Navigation,
   NavItemWrapper,
 } from "~/components/Layout/Navigation";
+import { useSession } from "next-auth/react";
 
 const JSONToSchema = () => {
+  const { data: session } = useSession();
   const [open, setOpen] = useState(false);
   const [schema, setSchema] = useState("");
   const [markers, setMarkers] = useState<Parameters<OnValidate>[number]>([]);
+
+  const isAdmin = session?.user.role === "ADMIN";
 
   const handleEditorChange = (value?: string) => {
     if (!value) return;
@@ -54,6 +59,9 @@ const JSONToSchema = () => {
     if (hasError()) return;
     setOpen(true);
   };
+
+  useRedirect({ isAuth: isAdmin });
+  if (!isAdmin) return null;
 
   return (
     <>

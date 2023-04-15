@@ -39,15 +39,17 @@ export const Head = () => {
                   Templates
                 </NavItem>
               </Link>
-              <Link
-                href="/schema/jsonld-to-schema"
-                className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
-              >
-                <NavItem>
-                  <CommandLineIcon className="mr-2 h-6 w-6" />
-                  JSON-LD to Schema
-                </NavItem>
-              </Link>
+              {session?.user.role === "ADMIN" && (
+                <Link
+                  href="/schema/jsonld-to-schema"
+                  className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                >
+                  <NavItem>
+                    <CommandLineIcon className="mr-2 h-6 w-6" />
+                    JSON-LD to Schema
+                  </NavItem>
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -58,12 +60,14 @@ export const Head = () => {
             Templates
           </NavItem>
         </Link>
-        <Link href="/schema/jsonld-to-schema" className="hidden md:block">
-          <NavItem hoverAble>
-            <CommandLineIcon className="mr-2 h-6 w-6" />
-            JSON-LD to Schema
-          </NavItem>
-        </Link>
+        {session?.user.role === "ADMIN" && (
+          <Link href="/schema/jsonld-to-schema" className="hidden md:block">
+            <NavItem hoverAble>
+              <CommandLineIcon className="mr-2 h-6 w-6" />
+              JSON-LD to Schema
+            </NavItem>
+          </Link>
+        )}
         <div className="flex-1" />
 
         {session ? (

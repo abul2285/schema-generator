@@ -13,6 +13,7 @@ import {
 } from "~/components/Layout/Navigation";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
+import { CardLoading } from "~/components/Loading";
 
 const Templates = () => {
   const { query, push } = useRouter();
@@ -59,8 +60,8 @@ const Templates = () => {
 const DefaultSchema = () => {
   const { data, isLoading } = api.scheme.getDefaultSchemas.useQuery();
 
-  if (isLoading) return <p>Loading....</p>;
-  if (!data) return <p>Default Template Not Found</p>;
+  if (isLoading) return <CardLoading />;
+  if (!data?.length) return <CreateNew title="No Template Found" />;
   return (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
       {data.map((schema) => (
@@ -75,7 +76,7 @@ const UserDefinedSchema = () => {
     templateOnly: true,
   });
 
-  if (isLoading) return <p>Loading....</p>;
+  if (isLoading) return <CardLoading />;
   if (!data?.length) return <CreateNew title="No Template Found" />;
 
   return (

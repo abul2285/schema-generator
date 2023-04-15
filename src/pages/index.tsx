@@ -5,6 +5,7 @@ import { api } from "~/utils/api";
 import { CreateNew } from "~/components/Card";
 import { generateSchema } from "~/utils/generateSchema";
 import { generateJSON_LD } from "~/utils/generateJSON_LD";
+import { CardLoading, Loading } from "~/components/Loading";
 import type { Schema, Field, FieldType } from "~/types/schema.types";
 
 type TemplateCardProps = {
@@ -108,14 +109,16 @@ const TemplateCard = ({
   const router = useRouter();
   const utils = api.useContext();
 
-  const { mutateAsync } = api.scheme.create.useMutation();
-  const { mutate: deleteSchema } = api.scheme.deleteSchema.useMutation({
-    onSuccess: (data) => {
-      if (data?.isCustom)
-        return void utils.scheme.getCurrentUserSchemas.invalidate();
-      void utils.scheme.getDefaultSchemas.invalidate();
-    },
-  });
+  const { mutateAsync, isLoading: isCreating } =
+    api.scheme.create.useMutation();
+  const { mutate: deleteSchema, isLoading: isDeleting } =
+    api.scheme.deleteSchema.useMutation({
+      onSuccess: (data) => {
+        if (data?.isCustom)
+          return void utils.scheme.getCurrentUserSchemas.invalidate();
+        void utils.scheme.getDefaultSchemas.invalidate();
+      },
+    });
 
   const handleCreateSchema = async () => {
     if (!schema)
@@ -144,16 +147,20 @@ const TemplateCard = ({
       <p className="font-sm mt-4 mb-3 leading-6 text-gray-700">{description}</p>
       <div className="flex gap-2">
         <button
+          disabled={isCreating}
           onClick={() => void handleCreateSchema()}
-          className="mt-2 cursor-pointer self-start rounded-lg border bg-sky-400 py-2 px-6 text-white hover:shadow-lg"
+          className="mt-2 flex cursor-pointer self-start rounded-lg border bg-sky-400 py-2 px-6 text-white hover:shadow-lg"
         >
+          {isCreating && <Loading />}
           Get Started
         </button>
         {isCustom && (
           <button
+            disabled={isDeleting}
             onClick={() => void deleteSchema({ id })}
-            className="mt-2 cursor-pointer self-start rounded-lg border border-red-400 bg-white py-2 px-6 text-red-400 hover:bg-red-400 hover:text-white hover:shadow-lg"
+            className="mt-2 flex cursor-pointer self-start rounded-lg border border-red-400 bg-white py-2 px-6 text-red-400 hover:bg-red-400 hover:text-white hover:shadow-lg"
           >
+            {isDeleting && <Loading />}
             Delete
           </button>
         )}
@@ -167,7 +174,7 @@ const UserTemplates = () => {
     schemaOnly: true,
   });
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <CardLoading />;
 
   if (!data?.length) return <CreateNew title="No Schema Found" />;
 

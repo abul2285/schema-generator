@@ -2,15 +2,16 @@ import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 
 import { api } from "~/utils/api";
+import { useRedirect } from "~/hooks";
 import Board from "~/components/Board/Board";
 import { type FieldType } from "~/types/schema.types";
+import { FullPageLoading } from "~/components/Loading";
 import { generateJSON_LD } from "~/utils/generateJSON_LD";
 import {
   NavItem,
   Navigation,
   NavItemWrapper,
 } from "~/components/Layout/Navigation";
-import { useRedirect } from "~/hooks";
 
 const SchemaTemplate = () => {
   const { status } = useSession();
@@ -26,7 +27,7 @@ const SchemaTemplate = () => {
 
   if (status === "unauthenticated") return null;
 
-  if (isLoading || !data) return <p>Loading...</p>;
+  if (isLoading || !data) return <FullPageLoading />;
   const jsonLD = generateJSON_LD(JSON.parse(data.schema) as FieldType[]);
   return (
     <>
