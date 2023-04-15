@@ -1,8 +1,15 @@
 import { useRef, useState } from "react";
+import Editor from "@monaco-editor/react";
 
 import { TemplateForm } from "~/components/Form";
 import { type Field } from "~/types/schema.types";
 import { generateSchema } from "~/utils/generateSchema";
+import { WrenchIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
+import {
+  NavItem,
+  Navigation,
+  NavItemWrapper,
+} from "~/components/Layout/Navigation";
 
 const JSONToSchema = () => {
   const ref = useRef<HTMLTextAreaElement | null>(null);
@@ -24,17 +31,25 @@ const JSONToSchema = () => {
 
   return (
     <>
-      <main className="fixed top-0 left-0 right-0 bottom-0 -z-10 flex h-screen flex-col items-center justify-center bg-slate-600">
-        <textarea
-          ref={ref}
-          className="mt-4 h-3/4 w-4/5 rounded-md border p-4 leading-8 tracking-wider text-sky-600 shadow-lg"
+      <Navigation submenu>
+        <NavItemWrapper>
+          <NavItem onClick={handleOpenModal}>
+            <WrenchIcon className="mr-1 h-6 w-6" />
+            Save as schema
+          </NavItem>
+          <NavItem onClick={handleOpenModal}>
+            <WrenchScrewdriverIcon className="mr-1 h-6 w-6" />
+            Save As Template
+          </NavItem>
+        </NavItemWrapper>
+      </Navigation>
+      <main className="flex h-screen flex-col items-center justify-center bg-slate-600">
+        <Editor
+          theme="vs-dark"
+          defaultValue=""
+          defaultLanguage="json"
+          className="h-5/6 w-4/5 p-10"
         />
-        <button
-          className="peer mt-2 w-1/3 self-center rounded-lg border bg-sky-400 py-2 px-6 text-white"
-          onClick={handleOpenModal}
-        >
-          Create Template From JSON-LD
-        </button>
         <TemplateForm open={open} schema={schema} setOpen={setOpen} />
       </main>
     </>
