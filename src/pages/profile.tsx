@@ -1,15 +1,16 @@
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { toast } from "react-hot-toast";
 import { useSession } from "next-auth/react";
 
 import { api } from "~/utils/api";
-import { Loading } from "~/components/Loading";
 import type { Schema } from "~/types/schema.types";
+import { FullPageLoading, Loading } from "~/components/Loading";
 
 const Profile = () => {
+  const idRef = useRef("");
   const router = useRouter();
   const utils = api.useContext();
   const { data: session, status } = useSession();
@@ -21,6 +22,9 @@ const Profile = () => {
         toast.success("Deleted Successfully");
         void utils.scheme.getCurrentUserSchemas.invalidate();
       },
+      onMutate({ id }) {
+        idRef.current = id;
+      },
     });
 
   useEffect(() => {
@@ -29,7 +33,7 @@ const Profile = () => {
     }
   }, [router, status]);
 
-  if (isLoading || !data) return <p>Loading....</p>;
+  if (isLoading || !data) return <FullPageLoading />;
 
   const templatesNumber = data.filter((schema) => schema.templateName).length;
 
@@ -102,7 +106,7 @@ const Profile = () => {
                       key={schema.id}
                       schema={schema}
                       deleteSchema={deleteSchema}
-                      isLoading={isDeleting}
+                      isLoading={isDeleting && idRef.current === schema.id}
                     />
                   ))}
                 </tbody>
@@ -135,21 +139,21 @@ const TableRow = ({
       <td className="whitespace-nowrap px-6 py-4  text-sm font-medium">
         {schema.templateName ? "Template" : "Schema"}
       </td>
-      <td className="whitespace-nowrap px-6 py-4 text-right  text-sm font-medium">
+      <td className="space-x-2 whitespace-nowrap px-6 py-4 text-right  text-sm font-medium">
         <Link
           href={`/schema/view/${schema.id}`}
-          className="mr-4 text-blue-600 hover:text-blue-900"
+          className="text-blue-600 hover:text-blue-900"
         >
           View
         </Link>
         <Link
           href={`/schema/${schema.id}`}
-          className="mr-4 text-blue-600 hover:text-blue-900"
+          className="text-blue-600 hover:text-blue-900"
         >
           Edit
         </Link>
         <button
-          className="text-red-600 hover:text-red-900"
+          className="inline-flex text-red-600 hover:text-red-900"
           onClick={() => deleteSchema({ id: schema.id })}
         >
           {isLoading && <Loading />}

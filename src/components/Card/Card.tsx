@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { toast } from "react-hot-toast";
+import { useRouter } from "next/router";
 import {
   EyeIcon,
   TrashIcon,
@@ -9,8 +10,8 @@ import {
   EllipsisHorizontalIcon,
 } from "@heroicons/react/24/outline";
 
+import { Loading } from "../Loading";
 import { api, type RouterOutputs } from "~/utils/api";
-import { useRouter } from "next/router";
 
 export const Card = (template: RouterOutputs["scheme"]["getById"]) => {
   const utils = api.useContext();
@@ -37,6 +38,15 @@ export const Card = (template: RouterOutputs["scheme"]["getById"]) => {
       },
     });
 
+  const { mutateAsync: createSchema, isLoading: isCreating } =
+    api.scheme.create.useMutation({
+      onSuccess: (data) => {
+        if (data) {
+          void router.push(`/schema/${data.id}`);
+        }
+      },
+    });
+
   const handleDuplicateTemplate = async (isCustom: boolean) => {
     if (!template) return;
     const { name, description, templateName, schema } = template;
@@ -50,11 +60,15 @@ export const Card = (template: RouterOutputs["scheme"]["getById"]) => {
   };
 
   const handleCreateFromTemplate = async () => {
-    const data = await handleDuplicateTemplate(true);
-
-    if (data) {
-      void router.push(`/schema/${data.id}`);
-    }
+    if (!template) return;
+    const { name, description, templateName, schema } = template;
+    return createSchema({
+      name,
+      schema,
+      description,
+      isCustom: true,
+      templateName: templateName || "",
+    });
   };
 
   if (!template) return null;
@@ -90,28 +104,28 @@ export const Card = (template: RouterOutputs["scheme"]["getById"]) => {
           <EllipsisHorizontalIcon className="mr-2 h-6 w-6" />
           <div className="absolute -right-3/4 bottom-full hidden w-52 flex-col rounded-sm bg-sky-200 shadow-lg group-hover:flex">
             <button
-              className={`flex px-4 py-2 hover:bg-sky-300 ${
-                isLoading ? "animate-spin" : ""
-              }`}
+              className="flex px-4 py-2 hover:bg-sky-300"
               disabled={isLoading}
               onClick={() => deleteSchema({ id: template.id })}
             >
+              {isLoading && <Loading />}
               <TrashIcon className="mr-2 h-6 w-6" />
               Delete
             </button>
             <button
-              className={`flex px-4 py-2 hover:bg-sky-300 ${
-                isDuplicating ? "animate-spin" : ""
-              }`}
+              className="flex px-4 py-2 hover:bg-sky-300"
               disabled={isDuplicating}
               onClick={() => void handleDuplicateTemplate(true)}
             >
+              {isDuplicating && <Loading />}
               <DocumentDuplicateIcon className="mr-2 h-6 w-6" /> Duplicate
             </button>
             <button
               className="flex px-3 py-2 hover:bg-sky-300"
               onClick={() => void handleCreateFromTemplate()}
+              disabled={isCreating}
             >
+              {isCreating && <Loading />}
               <PlusCircleIcon className="mr-2 h-6 w-6" /> Use It To Create
             </button>
           </div>

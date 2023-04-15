@@ -10,10 +10,10 @@ import {
 } from "@heroicons/react/24/outline";
 
 import { CreateNew } from "../Card";
-import { Loading } from "../Loading";
 import { useSchemaContext } from "~/contexts";
 import { TemplateForm } from "./TemplateForm";
 import { Validate } from "~/components/Validate";
+import { FullPageLoading, Loading } from "../Loading";
 import { api, type RouterOutputs } from "~/utils/api";
 import { RenderSchemaFields } from "~/components/RenderSchemaField";
 import {
@@ -108,7 +108,7 @@ export const SchemaForm = ({ id }: { id?: string }) => {
     setSchemaDetails(loadInitialData(data));
   }, [data, id]);
 
-  if (isLoading && id) return <p>loading...</p>;
+  if (isLoading && id) return <FullPageLoading />;
   if (id && !data)
     return (
       <div className="mt-24">
